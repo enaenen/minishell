@@ -12,5 +12,6 @@ char	*ft_strjoin(char const *s1, char const *s2);
 char	*ft_strntrim(char *str, char *set, int n);
 char	*ft_strtrim(char const *str, char const *set);
 char	*ft_substr(const char *str, size_t start, size_t len);
+void	*ft_free(char *p);
 
 #endif

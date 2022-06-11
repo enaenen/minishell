@@ -6,13 +6,13 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/12 14:05:43 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/12 15:11:18 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/12 18:14:49 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static void	*ft_free(char **str, int j)
+static void	*ft_spit_free(char **str, int j)
 {
 	int	i;
 
@@ -70,7 +70,7 @@ static char	**ft_alloc_chr(char **ret, char const *s, char c)
 			}
 			ret[j] = (char *)malloc((cnt + 1) * sizeof(char));
 			if (!ret[j])
-				return (ft_free(ret, j - 1));
+				return (ft_spit_free(ret, j - 1));
 		}
 	}
 	return (ret);

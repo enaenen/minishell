@@ -6,7 +6,7 @@
 #    By: wchae <wchae@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/05/27 06:38:51 by wchae             #+#    #+#              #
-#    Updated: 2022/06/12 17:58:28 by wchae            ###   ########.fr        #
+#    Updated: 2022/06/12 18:12:51 by wchae            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,6 +23,7 @@ SRCS			= ft_putstr_fd.c\
 				ft_substr.c\
 				ft_strjoin.c\
 				ft_memset.c\
+				ft_free.c\
 
 OBJS			= $(SRCS:.c=.o)
 
