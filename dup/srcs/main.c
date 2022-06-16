@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/12 18:30:45 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/14 01:04:26 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,7 @@ int	error_msg(char *msg)
 	}
 	else
 	{
-		g_stat = 127;
+		g_status = 127;
 		write(2, msg, ft_strlen(msg));
 		if (ft_strncmp(strerror(errno), "Bad address", 12) == 0)
 			write(2, ": command not found", 19);
@@ -143,7 +143,7 @@ int	error_msg(char *msg)
 		}
 	}
 	write(2, "\n", 1);
-	return (g_stat);
+	return (g_status);
 }
 /* UTIL END*/
 
