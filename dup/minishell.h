@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/12 17:10:27 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/17 21:05:49 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # include <fcntl.h>
 # include <sys/wait.h>
 # include <sys/errno.h>
+# include <string.h>
 # include <readline/history.h>
 # include <readline/readline.h>
 # include <sys/ioctl.h>
@@ -26,7 +27,9 @@
 # include <dirent.h>
 # include <curses.h>
 # include "libft.h"
+
 # define ERROR -1
+
 int g_status;
 
 typedef struct s_list

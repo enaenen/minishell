@@ -6,11 +6,15 @@
 #    By: wchae <wchae@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/11 17:09:27 by wchae             #+#    #+#              #
-#    Updated: 2022/06/12 15:21:17 by wchae            ###   ########.fr        #
+#    Updated: 2022/06/17 21:22:09 by wchae            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME		= minishell
+
+READLINE_DIR = readline
+READLINE_LIB = $(READLINE_DIR)
+READLINE = $(READLINE_DIR)/libreadline.a
 
 CC			= gcc
 CFLAGS		= -Wall -Werror -Wextra
@@ -30,8 +34,12 @@ LIB_DIR			= libft
 LIB_NAME		= ft
 LIB				= $(addprefix $(LIB_DIR)/, libft.a)
 
-$(NAME)			: $(LIB) $(OBJS)
-					$(CC) $(CFLAGS) $(INCS) -L$(LIB_DIR) -l$(LIB_NAME) -lreadline $(LDFLAGS) $(CPPFLAGS) -lncurses $(OBJS) -o $@
+$(NAME)			: $(LIB) $(OBJS) $(READLINE)
+					$(CC) $(CFLAGS) $(INCS) -L$(LIB_DIR) -l$(LIB_NAME) -L$(READLINE_DIR) -lreadline -lhistory -lncurses $(OBJS) -o $@
+
+$(READLINE)		:
+	cd $(READLINE_DIR); ./configure
+	make -C $(READLINE_DIR) all
 
 $(LIB)			:
 					$(MAKE) -C $(LIB_DIR) all

@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/14 01:04:26 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/17 21:22:45 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,7 +165,8 @@ int		split_redirection_token(char *input, int i, t_list **token)
 {
 	char	*tmp;
 	int		save;
-
+	// 
+	token = NULL;
 	save = i;
 	if (i != 0)
 	{
@@ -173,6 +174,7 @@ int		split_redirection_token(char *input, int i, t_list **token)
 		if (!tmp)
 			return (error_msg("malloc"));
 	}
+	return 0;
 }
 
 int		split_token(char *input, t_list **token)
@@ -194,7 +196,7 @@ int		split_token(char *input, t_list **token)
 			//space token
 		}
 		else if (input[i] == '|')
-		
+		{}
 			//split pipe token
 		else
 			continue ;
@@ -203,6 +205,7 @@ int		split_token(char *input, t_list **token)
 		input = &input[i];
 		i = -1;
 	}
+	return 0;
 }
 
 /* SPLIT TOKEN END */
@@ -213,10 +216,14 @@ void	parse_input(char *input, t_env *env, char **envp)
 	t_list	*token;
 	token = 0;
 	add_history(input);
+	env = NULL;
+	envp = NULL;
+	/*
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
-		
+		printf("XXXX\n");
 	}
+	*/
 }
 
 int main(int argc, char **argv, char **envp)
@@ -233,14 +240,19 @@ int main(int argc, char **argv, char **envp)
 	{
 		init_set2(&set, &envp, env);
 		input = readline("$ ");
+		/*
+		CTRL + D 처리 =NULL
+		*/
+		if (input == NULL)
+			write(1,"exit\n", 5);
 		signal(SIGQUIT, ft_sig_handler);
-		if (!input)
-		{
-			reset_set(&set);
-			exit(0);
-		}
-		tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
-		parse_input(input, env, envp);
+		// if (!input)
+		// {
+		// 	reset_set(&set);
+		// 	exit(0);
+		// }
+		// tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
+		// parse_input(input, env, envp);
 		// reset_stdio(&set);
 		// ft_free_split(envp);
 	}

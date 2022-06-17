@@ -13,5 +13,6 @@ char	*ft_strntrim(char *str, char *set, int n);
 char	*ft_strtrim(char const *str, char const *set);
 char	*ft_substr(const char *str, size_t start, size_t len);
 void	*ft_free(char *p);
+int		ft_strncmp(const char *s1, const char *s2, size_t n);
 
 #endif
