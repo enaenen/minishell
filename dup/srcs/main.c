@@ -59,6 +59,25 @@ t_list	*ft_lstnew(void *data)
 	return (new);
 }
 
+void	ft_lstclear(t_list **lst, void (*del)(void *))
+{
+	t_list	*next;
+
+	if (!lst || !*lst || !del)
+		return ;
+	while (*lst)
+	{
+		next = (*lst)->next;
+		del((*lst)->data);
+		(*lst)->data = NULL;
+		free(*lst);
+		*lst = NULL;
+		*lst = next;
+	}
+	*lst = NULL;
+}
+
+
 /*========== LinkedList END===========*/
 
 t_env	*env_set(char	**envp)
@@ -184,7 +203,7 @@ int	error_msg(char *msg)
 
 /* SPLIT TOKEN */
 /** QUOTE**/
-int		find_valid_quot_point(char *data, int start)
+int		 find_valid_quot_point(char *data, int start)
 {
 	int find;
 
@@ -197,7 +216,13 @@ int		find_valid_quot_point(char *data, int start)
 	//없다면 시작지점 return
 	return (start);
 }
-/* WIP
+/**
+ *
+ * 쪼개는 작업
+ *  "echo abc > a.txt"
+ * 	"echo abc >" AND "a.txt"
+ **/
+
 int		split_redirection_token(char *input, int i, t_list **token)
 {
 	char	*tmp;
@@ -208,7 +233,7 @@ int		split_redirection_token(char *input, int i, t_list **token)
 	{
 		tmp = ft_strntrim(input, " ", i);
 		if (!tmp)
-			return (error_msg("malloc"));
+			return (error_msg("MALLOC"));
 		ft_lstadd_back(token, ft_lstnew(tmp));
 		input = &input[i];
 		i = 0;
@@ -217,11 +242,11 @@ int		split_redirection_token(char *input, int i, t_list **token)
 		i++;
 	tmp = ft_strntrim(input, " ", i);
 	if (!tmp)
-		return (error_msg("MALLOC PROBLEM"));
+		return (error_msg("MALLOC"));
 	ft_lstadd_back(token, ft_lstnew(tmp));
 	return (i + save);
 }
-*/
+
 int	split_space_token(char *input, int i, t_list **token)
 {
 	char	*tmp;
@@ -230,13 +255,19 @@ int	split_space_token(char *input, int i, t_list **token)
 	{
 		tmp = ft_strntrim(input, " ", i);
 		if (!tmp)
-			return (error_msg("MALLOC PB"));
+			return (error_msg("MALLOC"));
 		ft_lstadd_back(token, ft_lstnew(tmp));
 	}
 	while (input[i] == ' ')
 		i++;
 	return (i);
 }
+/**
+ *
+ * 쪼개는 작업
+ *  "echo abc | ls -l"
+ * 	"echo abc" AND "|"" AND "ls -l"
+ **/
 
 int		split_pipe_token(char *input, int i, t_list **token)
 {
@@ -250,6 +281,24 @@ int		split_pipe_token(char *input, int i, t_list **token)
 		ft_lstadd_back(token, ft_lstnew(tmp));
 	}
 	tmp = ft_strdup("|");
+	if (!tmp)
+		return (error_msg("MALLOC"));
+	ft_lstadd_back(token, ft_lstnew(tmp));
+	return (i + 1);
+}
+
+int		split_rest_token(char *input, t_list **token)
+{
+	char	*tmp;
+	
+	if (input[0])
+	{
+		tmp = ft_strntrim(input, " ", ft_strlen(input));
+		if (!tmp)
+			return (error_msg("MALLOC"));
+		ft_lstadd_back(token, ft_lstnew(tmp));
+	}
+	return (TRUE);
 }
 
 int		split_token(char *input, t_list **token)
@@ -264,16 +313,13 @@ int		split_token(char *input, t_list **token)
 			i = find_valid_quot_point(input, i);
 			continue ;
 		}
-		/*
-		WIP
 		else if (input[i] == '<' || input[i] == '>')
 			i = split_redirection_token(input, i, token);
-		*/
+		
 		else if (input[i] == ' ')
 			i = split_space_token(input, i , token);
 		else if (input[i] == '|')
 			i = split_pipe_token(input, i, token);
-			//split pipe token
 		else
 			continue ;
 		if (i == ERROR)
@@ -281,11 +327,44 @@ int		split_token(char *input, t_list **token)
 		input = &input[i];
 		i = -1;
 	}
-	return 0;
+	return (split_rest_token(input, token));
 }
 
 /* SPLIT TOKEN END */
 
+/* CHECK TOKEN */
+
+int		check_token(t_list	*token)
+{
+	int	i;
+
+	i = 0;
+	while (token)
+	{
+		if (token->data[0] == '|' && (i == 0 
+			|| !token->next || token->next->data[0] == '|'))
+			return (error_msg("|"));
+		else if (token->data[0] == '<' || token->data[0] == '>')
+		{
+			if (token->data[1] && token->data[0] != token->data[1])
+				return (error_msg(&token->data[1]));
+			else if (2 < ft_strlen(token->data))
+				return (error_msg(&token->data[2]));
+			else if (!token->next)
+				return (error_msg(NULL));
+			else if (token->next->data[0] == '<'
+				|| token->next->data[0] == '>'
+				|| token->next->data[0] == '|')
+				return (error_msg(token->next->data));
+		}
+		i++;
+		token = token->next;
+	}
+	return (TRUE);
+}
+
+
+/* CHECK TOKEN END */
 
 void	parse_input(char *input, t_env *env, char **envp)
 {
@@ -294,8 +373,11 @@ void	parse_input(char *input, t_env *env, char **envp)
 	add_history(input);
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
-
+		write(1, "SUCCESS\n", 8);
 	}
+	ft_lstclear(&token, free);
+	envp = NULL;
+	env = NULL;
 }
 
 int main(int argc, char **argv, char **envp)
