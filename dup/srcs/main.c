@@ -6,11 +6,31 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/17 21:22:45 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/18 02:42:21 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+/**==============LinkedList============**/
+
+t_list	*ft_lstlast(t_list *lst)
+{
+	if (!lst)
+		return (NULL);
+	while (lst->next)
+		lst = lst->next;
+	return (lst);
+}
+
+void	ft_lstadd_back(t_list **lst, t_list *new)
+{
+	if (!lst || !new)
+		return ;
+	if (!*lst)
+		*lst = new;
+	else
+		ft_lstlast(*lst)->next = new;
+}
 
 void	env_lstadd_back(t_env **lst, t_env *new, char *key, char *value)
 {
@@ -26,6 +46,20 @@ void	env_lstadd_back(t_env **lst, t_env *new, char *key, char *value)
 	new->next = *phead;
 	*phead = new;
 }
+
+t_list	*ft_lstnew(void *data)
+{
+	t_list	*new;
+
+	new = (t_list *)malloc(sizeof(t_list));
+	if (!new)
+		return (NULL);
+	new->data = data;
+	new->next = NULL;
+	return (new);
+}
+
+/*========== LinkedList END===========*/
 
 t_env	*env_set(char	**envp)
 {
@@ -111,6 +145,7 @@ void	init_set2(t_set	*set, char ***envp, t_env *env)
 	//SIGQUIT -> SIG_GIN (무시)
 	signal(SIGQUIT, SIG_IGN);
 }
+
 void	reset_set(t_set *set)
 {
 	tcsetattr(STDIN_FILENO, TCSANOW, &set->org_term);
@@ -148,33 +183,73 @@ int	error_msg(char *msg)
 /* UTIL END*/
 
 /* SPLIT TOKEN */
-
+/** QUOTE**/
 int		find_valid_quot_point(char *data, int start)
 {
 	int find;
 
 	find = start + 1;
+	//닫는게 있다면 찾은지점 index return
 	while (data[find] && data[start] != data[find])
 		find++;
 	if (data[find])
 		return (find);
+	//없다면 시작지점 return
 	return (start);
 }
-
+/* WIP
 int		split_redirection_token(char *input, int i, t_list **token)
 {
 	char	*tmp;
 	int		save;
-	// 
-	token = NULL;
+
 	save = i;
 	if (i != 0)
 	{
 		tmp = ft_strntrim(input, " ", i);
 		if (!tmp)
 			return (error_msg("malloc"));
+		ft_lstadd_back(token, ft_lstnew(tmp));
+		input = &input[i];
+		i = 0;
 	}
-	return 0;
+	while (input[i] == '<' || input[i] == '>')
+		i++;
+	tmp = ft_strntrim(input, " ", i);
+	if (!tmp)
+		return (error_msg("MALLOC PROBLEM"));
+	ft_lstadd_back(token, ft_lstnew(tmp));
+	return (i + save);
+}
+*/
+int	split_space_token(char *input, int i, t_list **token)
+{
+	char	*tmp;
+
+	if (i != 0)
+	{
+		tmp = ft_strntrim(input, " ", i);
+		if (!tmp)
+			return (error_msg("MALLOC PB"));
+		ft_lstadd_back(token, ft_lstnew(tmp));
+	}
+	while (input[i] == ' ')
+		i++;
+	return (i);
+}
+
+int		split_pipe_token(char *input, int i, t_list **token)
+{
+	char	*tmp;
+
+	if (i != 0)
+	{
+		tmp = ft_strntrim(input, " ", i);
+		if (!tmp)
+			return (error_msg("MALLOC"));
+		ft_lstadd_back(token, ft_lstnew(tmp));
+	}
+	tmp = ft_strdup("|");
 }
 
 int		split_token(char *input, t_list **token)
@@ -187,16 +262,17 @@ int		split_token(char *input, t_list **token)
 		if (input[i] == '\"' || input[i] == '\'')
 		{
 			i = find_valid_quot_point(input, i);
-			continue;
+			continue ;
 		}
+		/*
+		WIP
 		else if (input[i] == '<' || input[i] == '>')
 			i = split_redirection_token(input, i, token);
+		*/
 		else if (input[i] == ' ')
-		{
-			//space token
-		}
+			i = split_space_token(input, i , token);
 		else if (input[i] == '|')
-		{}
+			i = split_pipe_token(input, i, token);
 			//split pipe token
 		else
 			continue ;
@@ -216,14 +292,10 @@ void	parse_input(char *input, t_env *env, char **envp)
 	t_list	*token;
 	token = 0;
 	add_history(input);
-	env = NULL;
-	envp = NULL;
-	/*
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
-		printf("XXXX\n");
+
 	}
-	*/
 }
 
 int main(int argc, char **argv, char **envp)
@@ -243,16 +315,15 @@ int main(int argc, char **argv, char **envp)
 		/*
 		CTRL + D 처리 =NULL
 		*/
-		if (input == NULL)
-			write(1,"exit\n", 5);
 		signal(SIGQUIT, ft_sig_handler);
-		// if (!input)
-		// {
-		// 	reset_set(&set);
-		// 	exit(0);
-		// }
-		// tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
-		// parse_input(input, env, envp);
+		if (!input)
+		{
+			write(1,"exit\n", 5);
+			reset_set(&set);
+			exit(0);
+		}
+		tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
+		parse_input(input, env, envp);
 		// reset_stdio(&set);
 		// ft_free_split(envp);
 	}
