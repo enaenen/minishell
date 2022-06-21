@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/21 17:17:39 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/21 20:01:56 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ typedef struct s_proc
 	t_list	*limiter;
 	int		infile;
 	int		outfile;
-	int		pip_flag;
+	int		pipe_flag;
 	int		status;
 }	t_proc;
 

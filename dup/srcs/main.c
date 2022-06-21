@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/21 19:30:10 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/22 02:24:02 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,6 +283,7 @@ int		split_pipe_token(char *input, int i, t_list **token)
 	tmp = ft_strdup("|");
 	if (!tmp)
 		return (error_msg("MALLOC"));
+		
 	ft_lstadd_back(token, ft_lstnew(tmp));
 	return (i + 1);
 }
@@ -468,17 +469,181 @@ void	process_heredoc(t_list *token)
 /* END HEREDOC */
 
 /* PIPE TOKEN */
+
+/** IN PIPE _ TOKEN PROCESS **/
+char	*ms_strtrim(char *data, int start, int end)
+{
+	int		i;
+	int		j;
+	char	*ret;
+
+	ret = (char *)malloc(end * sizeof(char));
+	if (!ret)
+		return (NULL);
+	i = -1;
+	j = 0;
+	while (data[++i] && i < end)
+	{
+		if (i != start)
+			ret[j++] = data[i];
+	}
+	ret[j] = '\0';
+	return (ret);
+}
+
+// data를 받아 data +1 부터 $ 토큰을 찾음 
+int		find_env_var_token(char *data, int start, int end)
+{
+	int	find;
+
+	find = start + 1;
+	while (data[find] && find < end && data[find] != '$')
+		find++;
+	if (find == end)
+		reutrn (FALSE);
+	return (TRUE);
+}
 /*
+char	*expand_in_quot_env_var(t_proc *proc, char *data, int start, int end)
+{
+	char	*new_data;
+	char	*tmp;
+	char	*tmp2;
+
+	new_data = ft_strndup(data, start);
+	if (!new_data)
+		rerturn (NULL);
+	data = &data[start + 1];
+	data = ft_strndup(data, end - start - 1);
+	if (!data)
+		return (ft_free(new_data));
+	tmp2 = data;
+	data = expand_in_quot_utils(proc, data, &new_data);
+	if (!data)
+		return (ft_free(tmp2));
+	tmp = new_data;
+	new_data = ft_strjoin(new_data, data);
+	ft_free(tmp2);
+	ft_free(tmp);
+	return (new_data);
+}
+
+*/
+char	*del_big_quot(t_proc *proc, char *data, int start, char **new_data)
+{
+	int		end;
+	char	*org_data;
+	char	*tmp;
+
+	org_data = *new_data;
+	tmp = NULL;
+	end = find_valid_quot_point(data, start);
+	//대괄호를 지우는 과정에서 $ 를 만났을때 expand 어떻게하는건가
+	//TODO 22-06-22
+	if (find_env_var_token(data, start, end) == TRUE)
+		tmp = expand_in_quot_env_var(proc, data, start, end);
+	else
+		tmp = ms_strtrim(data, start, end);
+	if (!tmp)
+		return (ft_free(org_data));
+	*new_data = ft_strjoin(*new_data, tmp);
+	ft_free(org_data);
+	ft_free(tmp);
+	if (!(*new_data))
+		return (NULL);
+	data = &data[end + 1];
+	return (data);
+}
+char	*del_small_quot_token(char *data, int start, char **new_data)
+{
+	int		end;
+	char	*tmp;
+	char	*org_data;
+	
+	org_data = new_data;
+	end = find_valid_quot_point(data, start);
+	tmp = ms_strtrim(data, start, end);
+	if (!tmp)
+		return (NULL);
+	*new_data = ft_strjoin(*new_data, tmp);
+	ft_free(org_data);
+	ft_free(tmp);
+	if (!(*new_data))
+		return (NULL);
+	data = &data[end + 1];
+	return (data);
+}
+/** END IN PIPE _ TOKEN PROCESS **/
+
+char	*expand_data(t_proc *proc, char *data)
+{
+	char	*new_data;
+	char	*tmp;
+	int		i;
+
+	i = -1;
+	while (data[++i])
+	{
+		// ' " 제거
+		if (data[i] == '\'' && i != find_valid_quot_point(data, i))
+			data = del_small_quot_token(data, i, &new_data);
+		else if (data[i] == '\"' && i != find_valid_quot_point(data, i))
+			data = del_big_quot(proc, data, i, &new_data)
+
+		else if (data[i] == '$')
+			data = expand_env_var(proc, data, i, &new_data);
+		else
+			continue;
+		if (!data)
+			return (ft_free(new_data));
+		i = -1;
+	}
+	tmp = new_data;
+	new_data = ft_strjoin(new_data, data);
+	ft_free(tmp);
+	return (new_data);
+}
+
+
+int		parse_data(t_proc *proc, t_list *data)
+{
+	char	*tmp;
+
+	while (data)
+	{
+		if (data->data[0] == '<' || data->data[0] == '>')
+		{
+			tmp = expand_data(proc, data->next->data);
+			if (!tmp)
+				return (error_msg("malloc"));
+			else if (parse_std_inout_redirection(proc, data, tmp) == ERROR)
+				return (ERROR);
+			ft_free(tmp);
+			data = data->next;
+		}
+		else
+		{
+			tmp = expand_data(proc, data->data);
+			if (!tmp)
+				return (error_msg("malloc"));
+			ft_lstadd_back(&proc->cmd, ft_lstnew(tmp));
+		}
+		data = data->next;
+	}
+	return (TRUE);
+}
+
 int		parse_process(t_proc *proc, t_env *env, char **envp)
 {
 	proc->env_list = env;
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
-		 //process command
-		
-	return 0;
+		 handle_command(proc, proc->cmd, envp);
+	ft_lstclear(&proc->limiter, free);
+	ft_lstclear(&proc->cmd, free);
+	ft_lstclear(&proc->data, free);
+	return (TRUE);
 }
-*/
-/**
+
 int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 {
 	char	*tmp;
@@ -498,15 +663,14 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 		{
 			parse_process(&proc, env, envp);
 			ft_memset(&proc, 0, sizeof(t_proc));
-			proc.pip_flag = TRUE;
+			proc.pipe_flag = TRUE;
 		}
 		if (!token->next)
-			//parse last		
+			parse_last_process(&proc, env, envp);
 		token = token->next;
 	}
 	return (TRUE);
 }
-**/
 /* END PIPE*/
 
 
@@ -521,7 +685,7 @@ void	parse_input(char *input, t_env *env, char **envp)
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
 		process_heredoc(token);
-		// parse_pipe_token(token, env, envp);
+		parse_pipe_token(token, env, envp);
 		//write(1, "SUCCESS\n", 8);
 	}
 	ft_lstclear(&token, free);
@@ -533,6 +697,8 @@ void	parse_input(char *input, t_env *env, char **envp)
  */
 void	reset_stdio(t_set *set)
 {
+	// printf("org_stdin = %d\n", set->org_stdin);
+	// printf("org_stdout = %d\n", set->org_stdout);
 	dup2(set->org_stdin, STDIN_FILENO);
 	dup2(set->org_stdout, STDOUT_FILENO);
 }
@@ -550,7 +716,7 @@ int main(int argc, char **argv, char **envp)
 	while (1)
 	{
 		init_set2(&set, &envp, env);
-		input = readline("$ ");
+		input = readline("minishell$ ");
 		/*
 		CTRL + D 처리 =NULL
 		*/

@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/12 15:13:14 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/17 21:15:23 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/21 19:59:12 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,11 +38,11 @@ void	ft_sig_handler(int status)
 			g_status = 130;
 		}
 	}
-	else if (status == SIGQUIT && pid != -1)
-	{
-		write(1, "Quit: 3\n", 8);
-		g_status = 131;
-	}
+	// else if (status == SIGQUIT && pid != -1)
+	// {
+	// 	write(1, "Quit: 3\n", 8);
+	// 	g_status = 131;
+	// }
 	else
 		ft_replace_line(131);
 }

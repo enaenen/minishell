@@ -6,7 +6,7 @@
 #    By: wchae <wchae@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/05/27 06:38:51 by wchae             #+#    #+#              #
-#    Updated: 2022/06/18 02:41:56 by wchae            ###   ########.fr        #
+#    Updated: 2022/06/22 02:05:59 by wchae            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,19 +27,10 @@ SRCS			= ft_putstr_fd.c\
 				ft_free.c\
 				ft_strncmp.c\
 				ft_strdup.c\
+				ft_strndup.c\
+				
 
 OBJS			= $(SRCS:.c=.o)
-
-BONUS			=	ft_lstnew.c\
-				ft_lstsize.c\
-				ft_lstlast.c\
-				ft_lstadd_front.c\
-				ft_lstadd_back.c\
-				ft_lstdelone.c\
-				ft_lstclear.c\
-				ft_lstiter.c\
-				ft_lstmap.c
-
 BONUS_OBJS		= $(BONUS:.c=.o)
 
 
