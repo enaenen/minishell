@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/21 17:18:46 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/21 19:30:10 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -315,7 +315,6 @@ int		split_token(char *input, t_list **token)
 		}
 		else if (input[i] == '<' || input[i] == '>')
 			i = split_redirection_token(input, i, token);
-		
 		else if (input[i] == ' ')
 			i = split_space_token(input, i , token);
 		else if (input[i] == '|')
@@ -469,15 +468,17 @@ void	process_heredoc(t_list *token)
 /* END HEREDOC */
 
 /* PIPE TOKEN */
+/*
 int		parse_process(t_proc *proc, t_env *env, char **envp)
 {
 	proc->env_list = env;
-	if (pase_data(proc, proc->data) == TRUE && proc->cmd)
+	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
 		 //process command
 		
 	return 0;
 }
-
+*/
+/**
 int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 {
 	char	*tmp;
@@ -505,6 +506,7 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 	}
 	return (TRUE);
 }
+**/
 /* END PIPE*/
 
 
@@ -519,12 +521,20 @@ void	parse_input(char *input, t_env *env, char **envp)
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
 		process_heredoc(token);
-		parse_pipe_token(token, env, envp);
+		// parse_pipe_token(token, env, envp);
 		//write(1, "SUCCESS\n", 8);
 	}
 	ft_lstclear(&token, free);
 	envp = NULL;
 	env = NULL;
+}
+/**
+ * SETTING
+ */
+void	reset_stdio(t_set *set)
+{
+	dup2(set->org_stdin, STDIN_FILENO);
+	dup2(set->org_stdout, STDOUT_FILENO);
 }
 
 int main(int argc, char **argv, char **envp)
@@ -553,7 +563,9 @@ int main(int argc, char **argv, char **envp)
 		}
 		tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
 		parse_input(input, env, envp);
-		// reset_stdio(&set);
+		input = ft_free(input);
+		//stdin , stdout 복구
+		reset_stdio(&set);
 		// ft_free_split(envp);
 	}
 	return (0);
