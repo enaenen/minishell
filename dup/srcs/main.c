@@ -6,12 +6,37 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/22 02:24:02 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/23 04:43:19 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 /**==============LinkedList============**/
+
+void	ft_putstr(char *str)
+{
+	int i;
+
+	i = 0;
+	while (str[i])
+	{
+		write(1, &str[i], 1);
+		i++;
+	}
+}
+
+void	ft_lstprint(t_list *lst)
+{
+	if (!lst)
+		return ;
+	while (lst)
+	{
+		ft_putstr(lst->data);
+		ft_putstr("\n");
+		lst = lst->next;
+	}
+		
+}
 
 t_list	*ft_lstlast(t_list *lst)
 {
@@ -216,6 +241,7 @@ int		 find_valid_quot_point(char *data, int start)
 	//없다면 시작지점 return
 	return (start);
 }
+
 /**
  *
  * 쪼개는 작업
@@ -500,25 +526,28 @@ int		find_env_var_token(char *data, int start, int end)
 	while (data[find] && find < end && data[find] != '$')
 		find++;
 	if (find == end)
-		reutrn (FALSE);
+		return (FALSE);
 	return (TRUE);
 }
-/*
+
 char	*expand_in_quot_env_var(t_proc *proc, char *data, int start, int end)
 {
 	char	*new_data;
 	char	*tmp;
 	char	*tmp2;
 
+	//
+	proc = NULL;
+
 	new_data = ft_strndup(data, start);
 	if (!new_data)
-		rerturn (NULL);
+		return (NULL);
 	data = &data[start + 1];
 	data = ft_strndup(data, end - start - 1);
 	if (!data)
 		return (ft_free(new_data));
 	tmp2 = data;
-	data = expand_in_quot_utils(proc, data, &new_data);
+	// data = expand_in_quot_utils(proc, data, &new_data);
 	if (!data)
 		return (ft_free(tmp2));
 	tmp = new_data;
@@ -528,7 +557,6 @@ char	*expand_in_quot_env_var(t_proc *proc, char *data, int start, int end)
 	return (new_data);
 }
 
-*/
 char	*del_big_quot(t_proc *proc, char *data, int start, char **new_data)
 {
 	int		end;
@@ -554,13 +582,14 @@ char	*del_big_quot(t_proc *proc, char *data, int start, char **new_data)
 	data = &data[end + 1];
 	return (data);
 }
+
 char	*del_small_quot_token(char *data, int start, char **new_data)
 {
 	int		end;
 	char	*tmp;
 	char	*org_data;
 	
-	org_data = new_data;
+	org_data = *new_data;
 	end = find_valid_quot_point(data, start);
 	tmp = ms_strtrim(data, start, end);
 	if (!tmp)
@@ -588,10 +617,10 @@ char	*expand_data(t_proc *proc, char *data)
 		if (data[i] == '\'' && i != find_valid_quot_point(data, i))
 			data = del_small_quot_token(data, i, &new_data);
 		else if (data[i] == '\"' && i != find_valid_quot_point(data, i))
-			data = del_big_quot(proc, data, i, &new_data)
+			data = del_big_quot(proc, data, i, &new_data);
 
-		else if (data[i] == '$')
-			data = expand_env_var(proc, data, i, &new_data);
+		// else if (data[i] == '$')
+		// 	data = expand_env_var(proc, data, i, &new_data);
 		else
 			continue;
 		if (!data)
@@ -616,8 +645,8 @@ int		parse_data(t_proc *proc, t_list *data)
 			tmp = expand_data(proc, data->next->data);
 			if (!tmp)
 				return (error_msg("malloc"));
-			else if (parse_std_inout_redirection(proc, data, tmp) == ERROR)
-				return (ERROR);
+			// else if (parse_std_inout_redirection(proc, data, tmp) == ERROR)
+				// return (ERROR);
 			ft_free(tmp);
 			data = data->next;
 		}
@@ -636,8 +665,10 @@ int		parse_data(t_proc *proc, t_list *data)
 int		parse_process(t_proc *proc, t_env *env, char **envp)
 {
 	proc->env_list = env;
-	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
-		 handle_command(proc, proc->cmd, envp);
+	envp =NULL;
+
+	// if (parse_data(proc, proc->data) == TRUE && proc->cmd)
+	// 	 handle_command(proc, proc->cmd, envp);
 	ft_lstclear(&proc->limiter, free);
 	ft_lstclear(&proc->cmd, free);
 	ft_lstclear(&proc->data, free);
@@ -665,8 +696,8 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 			ft_memset(&proc, 0, sizeof(t_proc));
 			proc.pipe_flag = TRUE;
 		}
-		if (!token->next)
-			parse_last_process(&proc, env, envp);
+		// if (!token->next)
+		// 	parse_last_process(&proc, env, envp);
 		token = token->next;
 	}
 	return (TRUE);
@@ -685,12 +716,17 @@ void	parse_input(char *input, t_env *env, char **envp)
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
 		process_heredoc(token);
-		parse_pipe_token(token, env, envp);
-		//write(1, "SUCCESS\n", 8);
+		// parse_pipe_token(token, env, envp);
+		while (0 < waitpid(-1, &g_status, 0))
+			continue ;
+		ft_lstprint(token);
 	}
+	if (WIFEXITED(g_status))
+		g_status = WEXITSTATUS(g_status);
 	ft_lstclear(&token, free);
-	envp = NULL;
-	env = NULL;
+	write(1, &envp[0][0], 0);
+	write(1, &env->value, 0);
+
 }
 /**
  * SETTING
@@ -701,6 +737,16 @@ void	reset_stdio(t_set *set)
 	// printf("org_stdout = %d\n", set->org_stdout);
 	dup2(set->org_stdin, STDIN_FILENO);
 	dup2(set->org_stdout, STDOUT_FILENO);
+}
+
+void	ft_free_split(char **arr)
+{
+	int	i;
+
+	i = 0;
+	while (arr[i])
+		free(arr[i++]);
+	free(arr);
 }
 
 int main(int argc, char **argv, char **envp)
@@ -718,7 +764,7 @@ int main(int argc, char **argv, char **envp)
 		init_set2(&set, &envp, env);
 		input = readline("minishell$ ");
 		/*
-		CTRL + D 처리 =NULL
+		CTRL + D 처리 = NULL
 		*/
 		signal(SIGQUIT, ft_sig_handler);
 		if (!input)
@@ -732,7 +778,7 @@ int main(int argc, char **argv, char **envp)
 		input = ft_free(input);
 		//stdin , stdout 복구
 		reset_stdio(&set);
-		// ft_free_split(envp);
+		ft_free_split(envp);
 	}
 	return (0);
 }
