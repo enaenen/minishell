@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/24 20:54:38 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/24 23:27:33 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -245,8 +245,7 @@ int		 find_valid_quot_point(char *data, int start)
 /**
  *
  * 쪼개는 작업
- *  "echo abc > a.txt"
- * 	"echo abc >" AND "a.txt"
+
  **/
 
 int		split_redirection_token(char *input, int i, t_list **token)
@@ -288,12 +287,6 @@ int	split_space_token(char *input, int i, t_list **token)
 		i++;
 	return (i);
 }
-/**
- *
- * 쪼개는 작업
- *  "echo abc | ls -l"
- * 	"echo abc" AND "|"" AND "ls -l"
- **/
 
 int		split_pipe_token(char *input, int i, t_list **token)
 {
