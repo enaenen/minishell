@@ -6,25 +6,13 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/27 21:44:40 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/28 00:58:48 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 #include <sys/ttydefaults.h>
 /**==============LinkedList============**/
-
-void	ft_putstr(char *str)
-{
-	int i;
-
-	i = 0;
-	while (str[i])
-	{
-		write(1, &str[i], 1);
-		i++;
-	}
-}
 
 void	ft_lstprint(t_list *lst)
 {
@@ -38,163 +26,13 @@ void	ft_lstprint(t_list *lst)
 	}
 		
 }
-
-t_list	*ft_lstlast(t_list *lst)
-{
-	if (!lst)
-		return (NULL);
-	while (lst->next)
-		lst = lst->next;
-	return (lst);
-}
-
-void	ft_lstadd_back(t_list **lst, t_list *new)
-{
-	if (!lst || !new)
-		return ;
-	if (!*lst)
-		*lst = new;
-	else
-		ft_lstlast(*lst)->next = new;
-}
-
-void	env_lstadd_back(t_env **lst, t_env *new, char *key, char *value)
-{
-	t_env	**phead;
-
-	new = (t_env *)malloc(sizeof(t_env));
-	new->key = key;
-	new->value = value;
-	new->print_check = 0;
-	phead = lst;
-	while (*phead)
-		phead = &(*phead)->next;
-	new->next = *phead;
-	*phead = new;
-}
-
-t_list	*ft_lstnew(void *data)
-{
-	t_list	*new;
-
-	new = (t_list *)malloc(sizeof(t_list));
-	if (!new)
-		return (NULL);
-	new->data = data;
-	new->next = NULL;
-	return (new);
-}
-
-void	ft_lstclear(t_list **lst, void (*del)(void *))
-{
-	t_list	*next;
-
-	if (!lst || !*lst || !del)
-		return ;
-	while (*lst)
-	{
-		next = (*lst)->next;
-		del((*lst)->data);
-		(*lst)->data = NULL;
-		free(*lst);
-		*lst = NULL;
-		*lst = next;
-	}
-	*lst = NULL;
-}
-
-
 /*========== LinkedList END===========*/
 
-t_env	*env_set(char	**envp)
-{
-	char	**splits;
-	t_env	*tmp;
-	t_env	*env_list;
 
-	tmp = NULL;
-	env_list = 0;
-	while (*envp)
-	{
-	//env = 기준으로 split 후 list에 set
-		splits = ft_split(*(envp++), '=');
-		// printf("0 : %s\n",splits[0]);// printf("1 : %s\n",splits[1]);
-		env_lstadd_back(&env_list, tmp, splits[0], splits[1]);
-		free(splits);
-	}
-	return (env_list);
-}
-
-void	init_set(t_set *set, t_env **env, char **envp)
-{
-	//env "=" 기준으로 split
-	*env = env_set(envp);
-	g_status = 0;
-	ft_memset(set, 0, sizeof(t_set));
-	set->org_stdin = dup(STDIN_FILENO);
-	set->org_stdout = dup(STDOUT_FILENO);
-	tcgetattr(STDIN_FILENO, &set->org_term);
-	tcgetattr(STDIN_FILENO, &set->new_term);
-	set->new_term.c_lflag &= ECHO;
-	//1byte씩 처리
-	set->new_term.c_cc[VMIN] = 1;
-	//시간설정 사용 X
-	set->new_term.c_cc[VTIME] = 0;
-	tcsetattr(STDIN_FILENO, TCSANOW, &set->new_term);
-}
-
-int		ft_env_lstsize(t_env	*lst)
-{
-	int	i;
-
-	i = 0;
-	while (lst)
-	{
-		lst = lst->next;
-		i++;
-	}
-	return (i);
-}
-
-char	**convert_env_lst_to_dp(t_env	*env)
-{
-	int		i;
-	int		len;
-	char	**envp;
-	char	*join_env;
-	char	*tmp;
-
-	len = ft_env_lstsize(env);
-	envp = (char **)malloc(sizeof(char *) * len + 1);
-	envp[len] = NULL;
-	i = 0;
-	while (len--)
-	{
-		tmp = ft_strjoin(env->key, "=");
-		join_env = ft_strjoin(tmp, env->value);
-		free(tmp);
-		envp[i++] = join_env;
-		env = env->next;
-	}
-	return (envp);
-}
-
-void	init_set2(t_set	*set, char ***envp, t_env *env)
-{
-	*envp = convert_env_lst_to_dp(env);
-	tcgetattr(STDIN_FILENO, &set->new_term);
-	set->new_term.c_lflag &= ECHO;
-	set->new_term.c_cc[VMIN] = 1;
-	set->new_term.c_cc[VTIME] = 0;
-	tcsetattr(STDIN_FILENO, TCSANOW, &set->new_term);
-	//SIGQUIT -> SIG_GIN (무시)
-	signal(SIGQUIT, SIG_IGN);
-}
-
-void	reset_set(t_set *set)
-{
-	tcsetattr(STDIN_FILENO, TCSANOW, &set->org_term);
-}
+// void	reset_set(t_set *set)
+// {
+// 	tcsetattr(STDIN_FILENO, TCSANOW, &set->org_term);
+// }
 
 /* UTIL */
 int	error_msg(char *msg)
@@ -391,109 +229,6 @@ int		check_token(t_list	*token)
 	}
 	return (TRUE);
 }
-/* HEREDOC */
-
-
-char	*ft_merge_str(char *line, char buf)
-{
-	int		size;
-	char	*str;
-	int		i;
-
-	size = ft_strlen(line);
-	str = (char *)malloc(sizeof(char) * (size + 2));
-	if (!str)
-		return (NULL);
-	i = 0;
-	while (line[i] != 0)
-	{
-		str[i] = line[i];
-		i++;
-	}
-	free(line);
-	str[i++] = buf;
-	str[i] = '\0';
-	return (str);
-}
-
-int	get_next_line(char **line)
-{
-	char	buf;
-	int		ret;
-
-	*line = (char *)malloc(1);
-	if (*line == NULL)
-		return (-1);
-	(*line)[0] = 0;
-	ret = read(0, &buf, 1);
-	while (buf != '\n' && buf != '\0')
-	{
-		*line = ft_merge_str(*line, buf);
-		if (*line == 0)
-			return (-1);
-		ret = read(0, &buf, 1);
-	}
-	if (buf == '\n')
-		return (1);
-	return (0);
-}
-
-void	print_line(char *line, char *limiter, int fd)
-{
-	if (ft_strncmp(line, limiter, ft_strlen(limiter)) == 0)
-		exit(0);
-	write(1, "> ", 2);
-	write(fd, line, ft_strlen(line));
-	write(fd, "\n", 1);
-}
-
-int		ft_heredoc(char *limiter)
-{
-	char	*line;
-	int		fd[2];
-	pid_t	pid;
-
-	if (pipe(fd) == -1)
-		return (error_msg("pipe"));
-	pid = fork();
-	if (pid == 0)
-	{
-		close(fd[0]);
-		write(1, "> ", 2);
-		while (get_next_line(&line))
-			print_line(line, limiter, fd[1]);
-		close(fd[1]);
-	}
-	else if (0 < pid)
-	{
-		close(fd[1]);
-		dup2(fd[0], STDIN_FILENO);
-		waitpid(pid, 0, 0);
-		close(fd[0]);
-	}
-	else
-		return (error_msg("fork"));
-	return (TRUE);
-}
-
-void	process_heredoc(t_list *token)
-{
-	int	org_stdin;
-
-	org_stdin = dup(STDIN_FILENO);
-	while (token)
-	{
-		if (ft_strncmp(token->data, "<<", 3) == 0)
-		{
-			dup2(org_stdin, STDIN_FILENO);
-			ft_heredoc(token->next->data);
-			token = token->next;
-		}
-		token = token->next;
-	}
-}
-
-/* END HEREDOC */
 
 /* PIPE TOKEN */
 
@@ -760,6 +495,34 @@ char	*expand_data(t_proc *proc, char *data)
 	return (new_data);
 }
 
+// >>  << < > 일때 리다이렉션 처리
+int		parse_std_inout_redirection(t_proc *proc, t_list *data, char *tmp)
+{
+	if (ft_strncmp(data->data, "<<", 3) == 0)
+		ft_lstadd_back(&proc->limiter, ft_lstnew(ft_strdup(tmp)));
+	if (ft_strncmp(data->data, "<", 3) == 0)
+	{
+		proc->infile = open(tmp, O_RDONLY);
+		if (proc->infile < 0)
+		{
+			error_msg(tmp);
+			ft_free(tmp);
+			return (ERROR);
+		}
+		dup2(proc->infile, STDIN_FILENO);
+	}
+	if (ft_strncmp(data->data, ">>", 3) == 0)
+		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	else if (ft_strncmp(data->data, ">", 2) == 0)
+		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	if (proc->outfile < 0)
+	{
+			error_msg(tmp);
+			ft_free(tmp);
+			return (ERROR);
+	}
+	return (TRUE);
+}
 
 int		parse_data(t_proc *proc, t_list *data)
 {
@@ -772,8 +535,8 @@ int		parse_data(t_proc *proc, t_list *data)
 			tmp = expand_data(proc, data->next->data);
 			if (!tmp)
 				return (error_msg("malloc"));
-			// else if (parse_std_inout_redirection(proc, data, tmp) == ERROR)
-				// return (ERROR);
+			else if (parse_std_inout_redirection(proc, data, tmp) == ERROR)
+				return (ERROR);
 			ft_free(tmp);
 			data = data->next;
 		}
@@ -796,6 +559,8 @@ int		parse_process(t_proc *proc, t_env *env, char **envp)
 	{
 		ft_lstprint(proc->cmd);
 		ft_lstprint(proc->data);
+		ft_lstprint(proc->limiter);
+		// handle_command(proc, proc->cmd, envp);
 	}
 	// for test
 	write(1,&envp, 0);
@@ -806,6 +571,27 @@ int		parse_process(t_proc *proc, t_env *env, char **envp)
 	ft_lstclear(&proc->data, free);
 	return (TRUE);
 }
+
+/** pasre process **/
+//WIP
+int parse_last_process(t_proc *proc, t_env *env, char **envp)
+{
+	char	**exe;
+
+	proc->env_list = env;
+	exe = NULL;
+	write(1,*envp,0);
+	//data expand
+	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
+	{
+		if (proc->pipe_flag == FALSE && check_builtin_command(proc->cmd))
+		{
+
+		}
+	}
+	return 0;
+}
+/** parse process END **/
 
 int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 {
@@ -829,8 +615,8 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 			ft_memset(&proc, 0, sizeof(t_proc));
 			proc.pipe_flag = TRUE;
 		}
-		// if (!token->next)
-			// parse_last_process(&proc, env, envp);
+		if (!token->next)
+			parse_last_process(&proc, env, envp);
 		token = token->next;
 	}
 	write(1, &envp[0][0], 0);
@@ -851,7 +637,7 @@ void	parse_input(char *input, t_env *env, char **envp)
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
 		process_heredoc(token);
-		parse_pipe_token(token, env, envp);
+		// parse_pipe_token(token, env, envp);
 		while (0 < waitpid(-1, &g_status, 0))
 			continue ;
 		ft_lstprint(token);
@@ -905,7 +691,8 @@ int main(int argc, char **argv, char **envp)
 		if (!input)
 		{
 			write(1,"exit\n", 5);
-			reset_set(&set);
+			tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
+			// reset_set(&set);
 			exit(0);
 		}
 		tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);

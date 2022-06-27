@@ -6,7 +6,7 @@
 #    By: wchae <wchae@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/11 17:09:27 by wchae             #+#    #+#              #
-#    Updated: 2022/06/17 21:22:09 by wchae            ###   ########.fr        #
+#    Updated: 2022/06/28 00:05:00 by wchae            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,11 @@ INCS		= -Ilibft -I.
 
 SRCS_DIR		= srcs
 SRCS_NAME		= main.c\
-					handler.c
+					sig_handler.c\
+					exe_handler.c\
+					heredoc.c\
+					lst_utils.c\
+					settings.c\
 
 SRCS			= $(addprefix $(SRCS_DIR)/, $(SRCS_NAME))
 

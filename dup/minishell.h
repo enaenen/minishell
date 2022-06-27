@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/21 20:01:56 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/27 23:55:21 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,20 @@ typedef struct s_proc
 	int		status;
 }	t_proc;
 
+int		error_msg(char *msg);
 void	ft_sig_handler(int status);
 
+void	process_heredoc(t_list *token);
 
+/** LIST UTILS **/
+t_list	*ft_lstlast(t_list *lst);
+void	ft_lstadd_back(t_list **lst, t_list *new);
+void	env_lstadd_back(t_env **lst, t_env *new, char *key, char *value);
+t_list	*ft_lstnew(void *data);
+void	ft_lstclear(t_list **lst, void (*del)(void *));
+
+
+void	init_set(t_set *set, t_env **env, char **envp);
+void	init_set2(t_set	*set, char ***envp, t_env *env);
 
 #endif
