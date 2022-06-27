@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/24 20:53:47 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/27 21:44:40 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -530,6 +530,52 @@ int		find_env_var_token(char *data, int start, int end)
 		return (FALSE);
 	return (TRUE);
 }
+/** env 해석 
+ * read_key env 해석 하여 key 값 가져옴
+ * strjoin 으로 합치기
+ * **/
+
+
+char	*read_key(t_env *env_list, char *key)
+{
+	while (env_list)
+	{
+		if (!ft_strcmp(env_list->key, key))
+			return (ft_strdup(env_list->value));
+		env_list = env_list->next;
+	}
+	return (NULL);
+}
+
+
+char	*parse_pre_env_var(char *data, int start, char *new_data)
+{
+	char	*org_data;
+	char	*tmp;
+
+	org_data = new_data;
+	tmp = ft_strndup(data, start);
+	if (!tmp)
+		return (ft_free(org_data));
+	new_data = ft_strjoin(new_data, tmp);
+	ft_free(tmp);
+	ft_free(org_data);
+	return (new_data);
+	
+}
+
+
+int		find_valid_env_var_point(char *data)
+{
+	int	index;
+	if (data[0] == '?')
+		return (1);
+	index = 0;
+	while (data[index] && (ft_isalnum(data[index]) || data[index] == '_'))
+		index++;
+	return (index);
+}
+
 
 char	*expand_env_var(t_proc *proc, char *data, int start, char **new_data)
 {
@@ -578,10 +624,23 @@ char	*expand_int_quot_utils(t_proc *proc, char *data, char **new_data)
 	return (data);
 }
 
-
-
-
-
+char	*expand_in_quot_utils(t_proc *proc, char *data, char **new_data)
+{
+	int i;
+	
+	i = -1;
+	while (data[++i])
+	{
+		if (data[i] == '$')
+		{
+			data = expand_env_var(proc, data, i, new_data);
+			if (!data)
+				return (ft_free(*new_data));
+			i = -1;
+		}
+	}
+	return (data);
+}
 
 char	*expand_in_quot_env_var(t_proc *proc, char *data, int start, int end)
 {
@@ -654,46 +713,6 @@ char	*del_small_quot_token(char *data, int start, char **new_data)
 /** END IN PIPE _ TOKEN PROCESS **/
 /** expand_var**/
 
-char	*parse_pre_env_var(char *data, int start, char *new_data)
-{
-	char	*org_data;
-	char	*tmp;
-
-	org_data = new_data;
-	tmp = ft_strndup(data, start);
-	if (!tmp)
-		return (ft_free(org_data));
-	new_data = ft_strjoin(new_data, tmp);
-	ft_free(tmp);
-	ft_free(org_data);
-	return (new_data);
-	
-}
-
-int		find_valid_env_var_point(char *data)
-{
-	int	index;
-	if (data[0] == '?')
-		return (1);
-	index = 0;
-	while (data[index] && (ft_isalnum(data[index]) || data[index] == '_'))
-		index++;
-	return (index);
-}
-
-char	*read_key(t_env *env_list, char *key)
-{
-	while (env_list)
-	{
-		if (!ft_strcmp(env_list->key, key))
-			return (ft_strdup(env_list->value));
-		env_list = env_list->next;
-	}
-	return (NULL);
-}
-
-
-
 char	*expand_in_quot_uitls(t_proc *proc, char *data, char **new)
 {
 	int	i;
@@ -719,6 +738,7 @@ char	*expand_data(t_proc *proc, char *data)
 	int		i;
 
 	i = -1;
+	new_data = NULL;
 	while (data[++i])
 	{
 		// ' " 제거
@@ -777,8 +797,9 @@ int		parse_process(t_proc *proc, t_env *env, char **envp)
 		ft_lstprint(proc->cmd);
 		ft_lstprint(proc->data);
 	}
+	// for test
 	write(1,&envp, 0);
-		//  handle_command(proc, proc->cmd, envp);
+	//  handle_command(proc, proc->cmd, envp);
 
 	ft_lstclear(&proc->limiter, free);
 	ft_lstclear(&proc->cmd, free);
