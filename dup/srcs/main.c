@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/28 00:58:48 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/28 01:04:36 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -588,8 +588,13 @@ int parse_last_process(t_proc *proc, t_env *env, char **envp)
 		{
 
 		}
+		else{}
+			//handle
 	}
-	return 0;
+	ft_lstclear(&proc->limiter, free);
+	ft_lstclear(&proc->cmd, free);
+	ft_lstclear(&proc->data, free);
+	return (TRUE);
 }
 /** parse process END **/
 
