@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/28 19:55:33 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/28 20:11:21 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,8 @@ void	execute_builtin_cmd(t_proc *proc, char **exe);
 void	ft_pwd(void);
 int		ft_echo(char **buf);
 void	ft_exit(char **buf);
+void	ft_cd(char **buf, t_env *env_list);
+
 
 
 

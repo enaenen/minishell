@@ -6,7 +6,7 @@
 #    By: wchae <wchae@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/11 17:09:27 by wchae             #+#    #+#              #
-#    Updated: 2022/06/28 18:52:18 by wchae            ###   ########.fr        #
+#    Updated: 2022/06/28 20:11:38 by wchae            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,6 +31,7 @@ SRCS_NAME		= main.c\
 					builtin_echo.c\
 					builtin_pwd.c\
 					builtin_exit.c\
+					builtin_cd.c\
 
 SRCS			= $(addprefix $(SRCS_DIR)/, $(SRCS_NAME))
 
