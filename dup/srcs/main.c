@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/28 01:04:36 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/28 18:39:52 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -465,7 +465,7 @@ char	*expand_in_quot_uitls(t_proc *proc, char *data, char **new)
 	}
 	return (data);
 }
-
+//malloc error
 char	*expand_data(t_proc *proc, char *data)
 {
 	char	*new_data;
@@ -476,6 +476,7 @@ char	*expand_data(t_proc *proc, char *data)
 	new_data = NULL;
 	while (data[++i])
 	{
+
 		// ' " 제거
 		if (data[i] == '\'' && i != find_valid_quot_point(data, i))
 			data = del_small_quot_token(data, i, &new_data);
@@ -492,6 +493,8 @@ char	*expand_data(t_proc *proc, char *data)
 	tmp = new_data;
 	new_data = ft_strjoin(new_data, data);
 	ft_free(tmp);
+	printf("new_data = %s\n",new_data);
+
 	return (new_data);
 }
 
@@ -527,14 +530,15 @@ int		parse_std_inout_redirection(t_proc *proc, t_list *data, char *tmp)
 int		parse_data(t_proc *proc, t_list *data)
 {
 	char	*tmp;
-
 	while (data)
 	{
 		if (data->data[0] == '<' || data->data[0] == '>')
 		{
 			tmp = expand_data(proc, data->next->data);
 			if (!tmp)
+			{
 				return (error_msg("malloc"));
+			}
 			else if (parse_std_inout_redirection(proc, data, tmp) == ERROR)
 				return (ERROR);
 			ft_free(tmp);
@@ -574,21 +578,83 @@ int		parse_process(t_proc *proc, t_env *env, char **envp)
 
 /** pasre process **/
 //WIP
+
+char	**split_cmd(t_list *cmd)
+{
+	char	**exe;
+	int		size;
+	int		i;
+
+	size = ft_lstsize(cmd);
+	exe = (char **)malloc((size + 1) * sizeof(char *));
+	if (!exe)
+		return (NULL);
+	i = 0;
+	while (i < size)
+	{
+		exe[i] = cmd->data;
+		cmd = cmd->next;
+		i++;
+	}
+	exe[i] = NULL;
+	return (exe);
+}
+
+int other_command(t_proc *proc, t_list *cmd, char **envp)
+{
+	pid_t	pid;
+	char	**exe;
+
+	pid = fork();
+	if (pid == 0)
+	{
+		if (0 < proc->outfile)
+			dup2(proc->outfile, STDOUT_FILENO);
+		exe = split_cmd(cmd);
+		if (!exe)
+			return (error_msg("malloc"));
+		if (check_builtin_cmd(proc->cmd) == TRUE)
+			execute_builtin_cmd(proc, exe);
+		else if (exe[0][0] == '/' || exe[0][0] == '.')
+			proc->status = execve(exe[0], exe, envp);
+		// else
+			// proc->status = execv();
+		if (proc->status == -1)
+			exit(error_msg(exe[0]));
+	}
+	else if (0 < pid)
+		return (0);
+	else
+		return (error_msg("fork"));
+	return (0);
+}
+
 int parse_last_process(t_proc *proc, t_env *env, char **envp)
 {
 	char	**exe;
 
 	proc->env_list = env;
 	exe = NULL;
-	write(1,*envp,0);
+	write(1, *envp, 0);
 	//data expand
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
 	{
-		if (proc->pipe_flag == FALSE && check_builtin_command(proc->cmd))
+		write(1,"proc->data :", ft_strlen("proc->data :"));
+		ft_lstprint(proc->data);
+		write(1,"proc->cmd : ", ft_strlen("proc->cmd :"));
+		ft_lstprint(proc->cmd);
+		if (proc->pipe_flag == FALSE && check_builtin_cmd(proc->cmd))
 		{
-
+			write(1, "builtin\n", ft_strlen("builtin\n"));
+			if (0 < proc->outfile)
+				dup2(proc->outfile, STDOUT_FILENO);
+			exe = split_cmd(proc->cmd);
+			if (!exe)
+				return (error_msg("malloc"));
+			execute_builtin_cmd(proc, exe);
 		}
-		else{}
+		else
+			other_command(proc, proc->cmd, envp);
 			//handle
 	}
 	ft_lstclear(&proc->limiter, free);
@@ -642,10 +708,10 @@ void	parse_input(char *input, t_env *env, char **envp)
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
 		process_heredoc(token);
-		// parse_pipe_token(token, env, envp);
+		parse_pipe_token(token, env, envp);
 		while (0 < waitpid(-1, &g_status, 0))
 			continue ;
-		ft_lstprint(token);
+		// ft_lstprint(token);
 	}
 	if (WIFEXITED(g_status))
 		g_status = WEXITSTATUS(g_status);

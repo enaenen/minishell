@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/27 23:55:21 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/28 19:55:33 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 
 # define ERROR -1
 
+// extern	char **environ;
 int g_status;
 
 typedef struct s_list
@@ -77,9 +78,19 @@ void	ft_lstadd_back(t_list **lst, t_list *new);
 void	env_lstadd_back(t_env **lst, t_env *new, char *key, char *value);
 t_list	*ft_lstnew(void *data);
 void	ft_lstclear(t_list **lst, void (*del)(void *));
-
+int		ft_lstsize(t_list *lst);
 
 void	init_set(t_set *set, t_env **env, char **envp);
 void	init_set2(t_set	*set, char ***envp, t_env *env);
+
+int		check_builtin_cmd(t_list *cmd);
+void	execute_builtin_cmd(t_proc *proc, char **exe);
+
+/* BUILTIN COMMANDS */
+void	ft_pwd(void);
+int		ft_echo(char **buf);
+void	ft_exit(char **buf);
+
+
 
 #endif
