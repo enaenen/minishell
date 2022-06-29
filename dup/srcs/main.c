@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/28 18:39:52 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/28 21:27:50 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -600,6 +600,34 @@ char	**split_cmd(t_list *cmd)
 	return (exe);
 }
 
+char	*find_path(char *cmd, char **env_list, int i)
+{
+	char	*path;
+	char	**paths;
+	char	*tmp;
+
+	while (env_list[i] && ft_strnstr(env_list[i], "PATH=", 5) == NULL)
+		i++;
+	if (env_list[i] == NULL)
+		return (cmd);
+	paths = ft_split(env_list[i] + 5, ':');
+	i = 0;
+	while (paths[i])
+	{
+		path = ft_strjoin(paths[i], "/");
+		tmp = path;
+		path = ft_strjoin(path, cmd);
+		free(tmp);
+		if (access(path, F_OK) == 0)
+		{
+			free(paths);
+			return (path);
+		}
+		i++;
+	}
+	return (cmd);
+}
+
 int other_command(t_proc *proc, t_list *cmd, char **envp)
 {
 	pid_t	pid;
@@ -616,9 +644,12 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 		if (check_builtin_cmd(proc->cmd) == TRUE)
 			execute_builtin_cmd(proc, exe);
 		else if (exe[0][0] == '/' || exe[0][0] == '.')
-			proc->status = execve(exe[0], exe, envp);
-		// else
-			// proc->status = execv();
+		{
+			if (execve(exe[0], exe, 0) == -1)
+				return (error_msg(exe[0]));
+		}
+		else if (execve(find_path(exe[0], envp, 0), exe, envp) == -1)
+				return (error_msg(exe[0]));
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
 	}
@@ -716,9 +747,6 @@ void	parse_input(char *input, t_env *env, char **envp)
 	if (WIFEXITED(g_status))
 		g_status = WEXITSTATUS(g_status);
 	ft_lstclear(&token, free);
-	write(1, &envp[0][0], 0);
-	write(1, &env->value, 0);
-
 }
 /**
  * SETTING
