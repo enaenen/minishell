@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/28 20:11:21 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/29 20:15:31 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,8 @@
 
 # define ERROR -1
 
-// extern	char **environ;
-int g_status;
+extern char	**environ;
+int	g_status;
 
 typedef struct s_list
 {

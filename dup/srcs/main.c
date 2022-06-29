@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/28 21:27:50 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/29 20:18:19 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -717,8 +717,8 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 			ft_memset(&proc, 0, sizeof(t_proc));
 			proc.pipe_flag = TRUE;
 		}
-		if (!token->next)
-			parse_last_process(&proc, env, envp);
+		// if (!token->next)
+			// parse_last_process(&proc, env, envp);
 		token = token->next;
 	}
 	write(1, &envp[0][0], 0);
