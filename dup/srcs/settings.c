@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:53:43 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/27 23:58:11 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/30 19:54:46 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ void	init_set(t_set *set, t_env **env, char **envp)
 	set->org_stdout = dup(STDOUT_FILENO);
 	tcgetattr(STDIN_FILENO, &set->org_term);
 	tcgetattr(STDIN_FILENO, &set->new_term);
-	set->new_term.c_lflag &= ECHO;
+	set->new_term.c_lflag &= ~(ECHOCTL);
 	//1byte씩 처리
 	set->new_term.c_cc[VMIN] = 1;
 	//시간설정 사용 X
@@ -89,7 +89,7 @@ void	init_set2(t_set	*set, char ***envp, t_env *env)
 {
 	*envp = convert_env_lst_to_dp(env);
 	tcgetattr(STDIN_FILENO, &set->new_term);
-	set->new_term.c_lflag &= ECHO;
+	set->new_term.c_lflag &= ~(ECHOCTL);
 	set->new_term.c_cc[VMIN] = 1;
 	set->new_term.c_cc[VTIME] = 0;
 	tcsetattr(STDIN_FILENO, TCSANOW, &set->new_term);

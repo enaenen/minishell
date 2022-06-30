@@ -25,6 +25,6 @@ char	*ft_itoa(int n);
 void	ft_putstr(char *str);
 int		ft_atoi(const char *str);
 char	*ft_strnstr(const char *haystack, const char *needle, size_t len);
-
+void	ft_free_split(char **arr);
 
 #endif

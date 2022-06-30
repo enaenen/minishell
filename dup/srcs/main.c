@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 15:06:41 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/30 19:34:17 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -554,29 +554,6 @@ int		parse_data(t_proc *proc, t_list *data)
 	return (TRUE);
 }
 
-int		parse_process(t_proc *proc, t_env *env, char **envp)
-{
-	proc->env_list = env;
-	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
-	{
-		ft_lstprint(proc->cmd);
-		ft_lstprint(proc->data);
-		ft_lstprint(proc->limiter);
-		// handle_command(proc, proc->cmd, envp);
-	}
-	// for test
-	write(1,&envp, 0);
-	//  handle_command(proc, proc->cmd, envp);
-
-	ft_lstclear(&proc->limiter, free);
-	ft_lstclear(&proc->cmd, free);
-	ft_lstclear(&proc->data, free);
-	return (TRUE);
-}
-
-/** pasre process **/
-//WIP
-
 char	**split_cmd(t_list *cmd)
 {
 	char	**exe;
@@ -626,6 +603,80 @@ char	*find_path(char *cmd, char **env_list, int i)
 	return (cmd);
 }
 
+/**COMMAND HANDLING**/
+int		execute_cmd(t_proc *proc, t_list *cmd, int *fd, char **envp)
+{
+	char **exe;
+
+	close(fd[0]);
+	if (0 < proc->outfile)
+		dup2(proc->outfile, STDOUT_FILENO);
+	else
+		dup2(fd[1], STDOUT_FILENO);
+	close(fd[1]);
+	exe = split_cmd(cmd);
+	if (!exe)
+		return (error_msg("malloc"));
+	if (check_builtin_cmd(proc->cmd) == TRUE)
+		execute_builtin_cmd(proc, exe);
+	else if (exe[0][0] == '/' || exe[0][0] == '.')
+	{
+		if (execve(exe[0], exe, 0) == -1)
+			return (error_msg(exe[0]));
+	}
+	else if (execve(find_path(exe[0], envp, 0), exe, envp) == -1)
+		return (error_msg(exe[0]));
+	return (0);
+}
+
+int		handle_cmd(t_proc *proc, t_list *cmd, char **envp)
+{
+	int		fd[2];
+	pid_t	pid;
+
+	if (pipe(fd) == -1)
+		return (error_msg("pipe"));
+	pid = fork();
+	if (pid == 0)
+		exit(execute_cmd(proc, cmd, fd, envp));
+	else if (0 < pid)
+	{
+		close(fd[1]);
+		dup2(fd[0], STDIN_FILENO);
+		close(fd[0]);
+	}
+	else
+	{
+		close(fd[0]);
+		close(fd[1]);
+		return (error_msg("fork"));
+	}
+	return (0);
+}
+
+/**COMMAND HANDLING END **/
+
+
+int		parse_process(t_proc *proc, t_env *env, char **envp)
+{
+	proc->env_list = env;
+	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
+	{
+		// ft_lstprint(proc->cmd);
+		// ft_lstprint(proc->data);
+		// ft_lstprint(proc->limiter);
+		handle_cmd(proc, proc->cmd, envp);
+	}
+	ft_lstclear(&proc->limiter, free);
+	ft_lstclear(&proc->cmd, free);
+	ft_lstclear(&proc->data, free);
+	return (TRUE);
+}
+
+/** pasre process **/
+//WIP
+
+
 int other_command(t_proc *proc, t_list *cmd, char **envp)
 {
 	pid_t	pid;
@@ -642,12 +693,9 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 		if (check_builtin_cmd(proc->cmd) == TRUE)
 			execute_builtin_cmd(proc, exe);
 		else if (exe[0][0] == '/' || exe[0][0] == '.')
-		{
-			if (execve(exe[0], exe, 0) == -1)
-				return (error_msg(exe[0]));
-		}
-		else if (execve(find_path(exe[0], envp, 0), exe, envp) == -1)
-				return (error_msg(exe[0]));
+			proc->status = execve(exe[0], exe, envp);
+		else
+			proc->status = execve(find_path(exe[0], envp, 0), exe, envp);
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
 		ft_free_split(exe);
@@ -669,13 +717,11 @@ int parse_last_process(t_proc *proc, t_env *env, char **envp)
 	//data expand
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
 	{
-		write(1,"proc->data :", ft_strlen("proc->data :"));
-		ft_lstprint(proc->data);
-		write(1,"proc->cmd : ", ft_strlen("proc->cmd :"));
-		ft_lstprint(proc->cmd);
+		// write(1,"proc->data :", ft_strlen("proc->data :"));
+		// ft_lstprint(proc->data);
+		// ft_lstprint(proc->cmd);
 		if (proc->pipe_flag == FALSE && check_builtin_cmd(proc->cmd))
 		{
-			write(1, "builtin\n", ft_strlen("builtin\n"));
 			if (0 < proc->outfile)
 				dup2(proc->outfile, STDOUT_FILENO);
 			exe = split_cmd(proc->cmd);
@@ -685,7 +731,6 @@ int parse_last_process(t_proc *proc, t_env *env, char **envp)
 		}
 		else
 			other_command(proc, proc->cmd, envp);
-			//handle
 	}
 	ft_lstclear(&proc->limiter, free);
 	ft_lstclear(&proc->cmd, free);
@@ -720,8 +765,6 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 			parse_last_process(&proc, env, envp);
 		token = token->next;
 	}
-	write(1, &envp[0][0], 0);
-	write(1, &env->value, 0);
 	return (TRUE);
 }
 /* END PIPE*/
@@ -737,8 +780,8 @@ void	parse_input(char *input, t_env *env, char **envp)
 	add_history(input);
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
-		printf("token\n");
-		ft_lstprint(token);
+		// printf("token\n");
+		// ft_lstprint(token);
 		process_heredoc(token);
 		parse_pipe_token(token, env, envp);
 		while (0 < waitpid(-1, &g_status, 0))
@@ -758,16 +801,6 @@ void	reset_stdio(t_set *set)
 	// printf("org_stdout = %d\n", set->org_stdout);
 	dup2(set->org_stdin, STDIN_FILENO);
 	dup2(set->org_stdout, STDOUT_FILENO);
-}
-
-void	ft_free_split(char **arr)
-{
-	int	i;
-
-	i = 0;
-	while (arr[i])
-		free(arr[i++]);
-	free(arr);
 }
 
 int main(int argc, char **argv, char **envp)
@@ -792,7 +825,6 @@ int main(int argc, char **argv, char **envp)
 		{
 			write(1,"exit\n", 5);
 			tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
-			// reset_set(&set);
 			exit(0);
 		}
 		tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
@@ -802,5 +834,6 @@ int main(int argc, char **argv, char **envp)
 		reset_stdio(&set);
 		ft_free_split(envp);
 	}
+	
 	return (0);
 }
