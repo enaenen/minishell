@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/29 20:18:19 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/30 15:06:41 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -536,9 +536,7 @@ int		parse_data(t_proc *proc, t_list *data)
 		{
 			tmp = expand_data(proc, data->next->data);
 			if (!tmp)
-			{
 				return (error_msg("malloc"));
-			}
 			else if (parse_std_inout_redirection(proc, data, tmp) == ERROR)
 				return (ERROR);
 			ft_free(tmp);
@@ -652,6 +650,7 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 				return (error_msg(exe[0]));
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
+		ft_free_split(exe);
 	}
 	else if (0 < pid)
 		return (0);
@@ -717,8 +716,8 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 			ft_memset(&proc, 0, sizeof(t_proc));
 			proc.pipe_flag = TRUE;
 		}
-		// if (!token->next)
-			// parse_last_process(&proc, env, envp);
+		if (!token->next)
+			parse_last_process(&proc, env, envp);
 		token = token->next;
 	}
 	write(1, &envp[0][0], 0);
@@ -738,6 +737,8 @@ void	parse_input(char *input, t_env *env, char **envp)
 	add_history(input);
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
+		printf("token\n");
+		ft_lstprint(token);
 		process_heredoc(token);
 		parse_pipe_token(token, env, envp);
 		while (0 < waitpid(-1, &g_status, 0))
