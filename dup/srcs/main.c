@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 19:34:17 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/30 21:42:53 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -812,7 +812,7 @@ int main(int argc, char **argv, char **envp)
 	argc = 0;
 	argv = NULL;
 	init_set(&set, &env, envp);
-	signal(SIGINT, ft_sig_handler);
+	signal(SIGINT, &sig_readline);
 	while (1)
 	{
 		init_set2(&set, &envp, env);
@@ -820,7 +820,7 @@ int main(int argc, char **argv, char **envp)
 		/*
 		CTRL + D 처리 = NULL
 		*/
-		signal(SIGQUIT, ft_sig_handler);
+		signal(SIGQUIT, &sig_readline);
 		if (!input)
 		{
 			write(1,"exit\n", 5);

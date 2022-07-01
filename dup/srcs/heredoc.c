@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:19:21 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/27 23:49:28 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/30 21:48:48 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,17 +70,22 @@ static int	ft_heredoc(char *limiter)
 	char	*line;
 	int		fd[2];
 	pid_t	pid;
-
+	
+	// signal(SIGQUIT, SIG_IGN);
+	signal(SIGQUIT, &sig_readline);
+	signal(SIGINT, &sig_here_doc_child);
 	if (pipe(fd) == -1)
 		return (error_msg("pipe"));
 	pid = fork();
 	if (pid == 0)
 	{
+		signal(SIGINT, SIG_DFL);
 		close(fd[0]);
 		write(1, "> ", 2);
 		while (get_next_line(&line))
 			print_line(line, limiter, fd[1]);
 		close(fd[1]);
+		g_status = 0;
 	}
 	else if (0 < pid)
 	{

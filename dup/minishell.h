@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/29 20:15:31 by wchae            ###   ########.fr       */
+/*   Updated: 2022/06/30 21:31:32 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,8 +69,11 @@ typedef struct s_proc
 
 int		error_msg(char *msg);
 void	ft_sig_handler(int status);
-
+void	sig_here_doc(int sig);
 void	process_heredoc(t_list *token);
+void	sig_here_doc_child(int sig);
+void	sig_exec(int sig);
+void	sig_readline(int sig);
 
 /** LIST UTILS **/
 t_list	*ft_lstlast(t_list *lst);
