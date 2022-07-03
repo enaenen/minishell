@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:53:43 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 19:54:46 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/03 16:50:44 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,22 +31,68 @@ static t_env	*env_set(char	**envp)
 	return (env_list);
 }
 
-void	init_set(t_set *set, t_env **env, char **envp)
+t_env	*find_env_node(t_env *env_list, char *key)
+{
+	while (env_list)
+	{
+		if (ft_strncmp(env_list->key, key, -1) == 0)
+			return (env_list);
+		env_list = env_list->next;
+	}
+	return (NULL);
+}
+
+void	set_env_node(t_env **env, char *key, char *val)
+{
+	t_env *tmp;
+
+	tmp = find_env_node(*env, key);
+	if (tmp)
+	{
+		free(key);
+		if (tmp->value)
+			free(tmp->value);
+		tmp->value = val;
+	}
+	else
+		env_lstadd_back(env, tmp, key, val);
+}
+
+void	env_init(t_env **env)
+{
+	t_env		*shlvl;
+	int			lvl;
+
+	set_env_node(env, ft_strdup("PWD"), getcwd(NULL, 0));
+	set_env_node(env, ft_strdup("OLDPWD"), NULL);
+	shlvl = find_env_node(*env, "SHLVL");
+	if (shlvl)
+	{
+		lvl = ft_atoi(shlvl->value);
+		set_env_node(env, ft_strdup("SHLVL"), ft_itoa(++lvl));
+	}
+	else
+		set_env_node(env, ft_strdup("SHLVL"), ft_itoa(1));
+}
+
+void	init_set(t_set *set, t_env **env)
 {
 	//env "=" 기준으로 split
-	*env = env_set(envp);
-	g_status = 0;
 	ft_memset(set, 0, sizeof(t_set));
+	*env = env_set(environ);
+	g_status = 0;
+	set->cur_path = getcwd(NULL, 0);
 	set->org_stdin = dup(STDIN_FILENO);
 	set->org_stdout = dup(STDOUT_FILENO);
 	tcgetattr(STDIN_FILENO, &set->org_term);
 	tcgetattr(STDIN_FILENO, &set->new_term);
 	set->new_term.c_lflag &= ~(ECHOCTL);
+	env_init(env);
 	//1byte씩 처리
-	set->new_term.c_cc[VMIN] = 1;
+	// set->new_term.c_cc[VMIN] = 1;
 	//시간설정 사용 X
-	set->new_term.c_cc[VTIME] = 0;
-	tcsetattr(STDIN_FILENO, TCSANOW, &set->new_term);
+	// set->new_term.c_cc[VTIME] = 0;
+	// tcsetattr(STDIN_FILENO, TCSANOW, &set->new_term);
 }
 
 static int	ft_env_lstsize(t_env	*lst)

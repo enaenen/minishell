@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 21:31:32 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/03 16:23:44 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@
 # define ERROR -1
 
 extern char	**environ;
-int	g_status;
+int			g_status;
 
 typedef struct s_list
 {
@@ -53,6 +53,7 @@ typedef struct s_set
 	struct termios	new_term;
 	int				org_stdin;
 	int				org_stdout;
+	char			*cur_path;
 }	t_set;
 
 typedef struct s_proc
@@ -83,7 +84,7 @@ t_list	*ft_lstnew(void *data);
 void	ft_lstclear(t_list **lst, void (*del)(void *));
 int		ft_lstsize(t_list *lst);
 
-void	init_set(t_set *set, t_env **env, char **envp);
+void	init_set(t_set *set, t_env **env);
 void	init_set2(t_set	*set, char ***envp, t_env *env);
 
 int		check_builtin_cmd(t_list *cmd);

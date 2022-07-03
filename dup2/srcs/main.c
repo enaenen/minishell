@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 21:42:53 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/03 16:47:02 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -803,37 +803,44 @@ void	reset_stdio(t_set *set)
 	dup2(set->org_stdout, STDOUT_FILENO);
 }
 
-int main(int argc, char **argv, char **envp)
+void	print_env_list(t_env *env)
+{
+	while (env){
+		printf("key = %s value = %s \n",env->key, env->value);
+		env = env->next;
+	}
+}
+
+int main(void)
 {
 	t_set	set;
 	t_env	*env;
-	char	*input;
+	// char	*input;
 
-	argc = 0;
-	argv = NULL;
-	init_set(&set, &env, envp);
-	signal(SIGINT, &sig_readline);
-	while (1)
-	{
-		init_set2(&set, &envp, env);
-		input = readline("minishell$ ");
-		/*
-		CTRL + D 처리 = NULL
-		*/
-		signal(SIGQUIT, &sig_readline);
-		if (!input)
-		{
-			write(1,"exit\n", 5);
-			tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
-			exit(0);
-		}
-		tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
-		parse_input(input, env, envp);
-		input = ft_free(input);
-		//stdin , stdout 복구
-		reset_stdio(&set);
-		ft_free_split(envp);
-	}
-	
+	init_set(&set, &env);
+	print_env_list(env);
+	// signal(SIGINT, &sig_readline);
+	// while (1)
+	// {
+		// init_set2(&set, &envp, env);
+		// input = readline("minishell$ ");
+		// /*
+		// CTRL + D 처리 = NULL
+		// */
+		// signal(SIGQUIT, &sig_readline);
+		// if (!input)
+		// {
+		// 	write(1,"exit\n", 5);
+		// 	tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
+		// 	exit(0);
+		// }
+		// tcsetattr(STDIN_FILENO, TCSANOW, &set.org_term);
+		// parse_input(input, env, envp);
+		// input = ft_free(input);
+		// //stdin , stdout 복구
+		// reset_stdio(&set);
+		// ft_free_split(envp);
+	// }
+	system("leaks minishell");
 	return (0);
 }
