@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:51:29 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/28 15:26:26 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/03 21:04:02 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void	env_lstadd_back(t_env **lst, t_env *new, char *key, char *value)
 	new = (t_env *)malloc(sizeof(t_env));
 	new->key = key;
 	new->value = value;
-	new->print_check = 0;
+	// new->print_check = 0;
 	phead = lst;
 	while (*phead)
 		phead = &(*phead)->next;

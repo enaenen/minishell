@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/28 00:05:09 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 21:34:17 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/03 21:03:24 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,8 @@ void	execute_builtin_cmd(t_proc *proc, char **exe)
 			// ft_export(&exe[1], proc->env_list, 0, 0);
 		// if (ft_strncmp(proc->cmd->data, "unset", 6) == 0)
 			// ft_unset(&exe[1], &proc->env_list);
-		// if (ft_strncmp(proc->cmd->data, "env", 4) == 0)
-			// ft_env(proc->env_list);
+		if (ft_strncmp(proc->cmd->data, "env", 4) == 0)
+			ft_env(proc->env_list);
 		if (ft_strncmp(proc->cmd->data, "exit", 5) == 0)
 			ft_exit(&exe[1]);
 		free(exe);

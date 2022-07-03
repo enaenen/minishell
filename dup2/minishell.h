@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/03 16:23:44 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/04 02:52:33 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ typedef struct s_env
 {
 	char 			*key;
 	char 			*value;
-	int				print_check;
+	// int				print_check;
 	struct s_env	*next;
 }	t_env;
 
@@ -84,6 +84,8 @@ t_list	*ft_lstnew(void *data);
 void	ft_lstclear(t_list **lst, void (*del)(void *));
 int		ft_lstsize(t_list *lst);
 
+void	set_env_node(t_env **env, char *key, char *val);
+
 void	init_set(t_set *set, t_env **env);
 void	init_set2(t_set	*set, char ***envp, t_env *env);
 
@@ -95,8 +97,10 @@ void	ft_pwd(void);
 int		ft_echo(char **buf);
 void	ft_exit(char **buf);
 void	ft_cd(char **buf, t_env *env_list);
+int		ft_env(t_env *env_list);
 
 
+char **get_env_list(t_env **env_list);
 
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/03 20:41:59 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/04 04:10:08 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,12 +142,12 @@ int		split_pipe_token(char *input, int i, t_list **token)
 	{
 		tmp = ft_strntrim(input, " ", i);
 		if (!tmp)
-			return (error_msg("MALLOC"));
+			return (error_msg("malloc"));
 		ft_lstadd_back(token, ft_lstnew(tmp));
 	}
 	tmp = ft_strdup("|");
 	if (!tmp)
-		return (error_msg("MALLOC"));
+		return (error_msg("malloc"));
 		
 	ft_lstadd_back(token, ft_lstnew(tmp));
 	return (i + 1);
@@ -661,12 +661,7 @@ int		parse_process(t_proc *proc, t_env *env, char **envp)
 {
 	proc->env_list = env;
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
-	{
-		// ft_lstprint(proc->cmd);
-		// ft_lstprint(proc->data);
-		// ft_lstprint(proc->limiter);
 		handle_cmd(proc, proc->cmd, envp);
-	}
 	ft_lstclear(&proc->limiter, free);
 	ft_lstclear(&proc->cmd, free);
 	ft_lstclear(&proc->data, free);
@@ -713,7 +708,7 @@ int parse_last_process(t_proc *proc, t_env *env, char **envp)
 
 	proc->env_list = env;
 	exe = NULL;
-	write(1, *envp, 0);
+	// write(1, *envp, 0);
 	//data expand
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
 	{
@@ -780,7 +775,6 @@ void	parse_input(char *input, t_env *env, char **envp)
 	add_history(input);
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
-		// printf("token\n");
 		// ft_lstprint(token);
 		process_heredoc(token);
 		parse_pipe_token(token, env, envp);
@@ -797,12 +791,10 @@ void	parse_input(char *input, t_env *env, char **envp)
  */
 void	reset_stdio(t_set *set)
 {
-	// printf("org_stdin = %d\n", set->org_stdin);
-	// printf("org_stdout = %d\n", set->org_stdout);
 	dup2(set->org_stdin, STDIN_FILENO);
 	dup2(set->org_stdout, STDOUT_FILENO);
 }
-
+/**fortest**/
 void	print_env_list(t_env *env)
 {
 	while (env){
@@ -816,9 +808,9 @@ int main(void)
 	t_set	set;
 	t_env	*env;
 	char	*input;
+	char	**envp;
 
 	init_set(&set, &env);
-	// print_env_list(env);
 	while (1)
 	{
 		signal(SIGINT, &sig_readline);
@@ -831,9 +823,12 @@ int main(void)
 			tcsetattr(STDOUT_FILENO, TCSANOW, &set.org_term);
 			exit(g_status);
 		}
-		parse_input(input, env, environ);
+		envp = get_env_list(&env);
+		parse_input(input, env, envp);
 		input = ft_free(input);
 		reset_stdio(&set);
+		ft_free_split(envp);
+		// ft_print_envlist(get_env_list(&env));
 	}
 	// signal(SIGINT, &sig_readline);
 	// while (1)
@@ -856,6 +851,5 @@ int main(void)
 		// reset_stdio(&set);
 		// ft_free_split(envp);
 	// }
-	system("leaks minishell");
 	return (0);
 }
