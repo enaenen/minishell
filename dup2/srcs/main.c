@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/03 16:47:02 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/03 20:41:59 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -815,15 +815,30 @@ int main(void)
 {
 	t_set	set;
 	t_env	*env;
-	// char	*input;
+	char	*input;
 
 	init_set(&set, &env);
-	print_env_list(env);
+	// print_env_list(env);
+	while (1)
+	{
+		signal(SIGINT, &sig_readline);
+		signal(SIGQUIT, SIG_IGN);
+		tcsetattr(STDOUT_FILENO, TCSANOW, &set.new_term);
+		input = readline("minishell$ ");
+		if (input == NULL)
+		{
+			write(1,"\e[Aminishell$ exit\n", 20);
+			tcsetattr(STDOUT_FILENO, TCSANOW, &set.org_term);
+			exit(g_status);
+		}
+		parse_input(input, env, environ);
+		input = ft_free(input);
+		reset_stdio(&set);
+	}
 	// signal(SIGINT, &sig_readline);
 	// while (1)
 	// {
 		// init_set2(&set, &envp, env);
-		// input = readline("minishell$ ");
 		// /*
 		// CTRL + D 처리 = NULL
 		// */

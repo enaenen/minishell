@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:53:43 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/03 16:50:44 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/03 19:21:40 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,6 @@ void	init_set(t_set *set, t_env **env)
 {
 	//env "=" 기준으로 split
 	ft_memset(set, 0, sizeof(t_set));
-	*env = env_set(environ);
 	g_status = 0;
 	set->cur_path = getcwd(NULL, 0);
 	set->org_stdin = dup(STDIN_FILENO);
@@ -87,6 +86,7 @@ void	init_set(t_set *set, t_env **env)
 	tcgetattr(STDIN_FILENO, &set->org_term);
 	tcgetattr(STDIN_FILENO, &set->new_term);
 	set->new_term.c_lflag &= ~(ECHOCTL);
+	*env = env_set(environ);
 	env_init(env);
 	//1byte씩 처리
 	// set->new_term.c_cc[VMIN] = 1;

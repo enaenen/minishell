@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:19:21 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 21:48:48 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/03 20:27:17 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,56 +59,59 @@ static int	get_next_line(char **line)
 static void	print_line(char *line, char *limiter, int fd)
 {
 	if (ft_strncmp(line, limiter, ft_strlen(limiter)) == 0)
-		exit(0);
+	{
+		free(line);
+		close(fd);
+		exit(EXIT_SUCCESS);
+	}
 	write(1, "> ", 2);
 	write(fd, line, ft_strlen(line));
 	write(fd, "\n", 1);
 }
 
-static int	ft_heredoc(char *limiter)
+static void	heredoc_child(char *limiter, int *fd)
 {
 	char	*line;
+
+	signal(SIGINT, SIG_DFL);
+	close(fd[0]);
+	write(1, "> ", 2);
+	while (1)
+	{
+		while (get_next_line(&line))
+			print_line(line, limiter, fd[1]);
+	}
+	exit(EXIT_FAILURE);
+}
+
+static int	ft_heredoc(char *limiter)
+{
 	int		fd[2];
+	int		status;
 	pid_t	pid;
 	
-	// signal(SIGQUIT, SIG_IGN);
-	signal(SIGQUIT, &sig_readline);
-	signal(SIGINT, &sig_here_doc_child);
 	if (pipe(fd) == -1)
 		return (error_msg("pipe"));
 	pid = fork();
-	if (pid == 0)
-	{
-		signal(SIGINT, SIG_DFL);
-		close(fd[0]);
-		write(1, "> ", 2);
-		while (get_next_line(&line))
-			print_line(line, limiter, fd[1]);
-		close(fd[1]);
-		g_status = 0;
-	}
-	else if (0 < pid)
-	{
-		close(fd[1]);
-		dup2(fd[0], STDIN_FILENO);
-		waitpid(pid, 0, 0);
-		close(fd[0]);
-	}
-	else
+	if (pid == -1)
 		return (error_msg("fork"));
+	if (pid == 0)
+		heredoc_child(limiter, fd);
+	close(fd[1]);
+	waitpid(pid, &status, 0);
+	dup2(fd[0], STDIN_FILENO);
+	close(fd[0]);
+	
 	return (TRUE);
 }
 
 void	process_heredoc(t_list *token)
 {
-	int	org_stdin;
-
-	org_stdin = dup(STDIN_FILENO);
+	signal(SIGINT, &sig_here_doc);
 	while (token)
 	{
 		if (ft_strncmp(token->data, "<<", 3) == 0)
 		{
-			dup2(org_stdin, STDIN_FILENO);
 			ft_heredoc(token->next->data);
 			token = token->next;
 		}

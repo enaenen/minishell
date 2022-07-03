@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/12 15:13:14 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 21:49:21 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/03 20:07:05 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,13 +22,23 @@ void	ft_replace_line(int var_stat)
 
 void	sig_readline(int sig)
 {
+
 	if (sig == SIGINT)
-		ft_replace_line(1);
-	else if (sig == SIGQUIT)
 	{
+		g_status = 1;
+		printf("\n");
 		rl_on_new_line();
+		rl_replace_line("", 0);
 		rl_redisplay();
 	}
+
+	// if (sig == SIGINT)
+	// 	ft_replace_line(1);
+	// else if (sig == SIGQUIT)
+	// {
+	// 	rl_on_new_line();
+	// 	rl_redisplay();
+	// }
 }
 /**
 void	ft_sig_handler(int status)
@@ -65,15 +75,15 @@ void	sig_here_doc(int sig)
 		printf("\n");
 }
 
-void	sig_here_doc_child(int sig)
-{
-	if (sig == SIGQUIT)
-	{
-		rl_replace_line("", 0);
-		rl_on_new_line();
-		rl_redisplay();
-	}
-}
+// void	sig_here_doc_child(int sig)
+// {
+// 	if (sig == SIGQUIT)
+// 	{
+// 		rl_replace_line("", 0);
+// 		rl_on_new_line();
+// 		rl_redisplay();
+// 	}
+// }
 
 void	sig_exec(int sig)
 {
