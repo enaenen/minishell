@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/04 18:43:23 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 21:58:55 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/04 22:52:34 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ int	export_key_syntax_check(char *s)
 	int	i;
 
 	i = -1;
-	if (ft_isalpha(s[0]))
+	if (ft_isdigit(s[0]))
 		return (export_key_syntax_error(s));
 	while (s[++i])
 	{
@@ -103,7 +103,7 @@ void	ft_export(char **buf, t_env *env_list, char **splits, t_env *tmp)
 	while (*buf)
 	{
 		splits = ft_split(*(buf++), '=');
-		if (!splits[1] || !export_key_syntax_check(splits[0])){
+		if (!export_key_syntax_check(splits[0]) || !splits[1]){
 			ft_free_split(splits);
 			continue ;
 		}

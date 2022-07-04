@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 21:49:29 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/04 22:42:02 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -679,10 +679,13 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 {
 	pid_t	pid;
 	char	**exe;
+	char	**new_envp;
 
+	write(1, *envp, 0);
 	pid = fork();
 	if (pid == 0)
 	{
+		new_envp = get_env_list(&proc->env_list);
 		if (0 < proc->outfile)
 			dup2(proc->outfile, STDOUT_FILENO);
 		exe = split_cmd(cmd);
@@ -691,9 +694,13 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 		if (check_builtin_cmd(proc->cmd) == TRUE)
 			execute_builtin_cmd(proc, exe);
 		else if (exe[0][0] == '/' || exe[0][0] == '.')
-			proc->status = execve(exe[0], exe, envp);
+		{
+			proc->status = execve(exe[0], exe, new_envp);
+		}
 		else
-			proc->status = execve(find_path(exe[0], envp, 0), exe, envp);
+		{
+			proc->status = execve(find_path(exe[0], new_envp, 0), exe, new_envp);
+		}
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
 		// ft_free_split(exe);
