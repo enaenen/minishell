@@ -6,7 +6,7 @@
 #    By: wchae <wchae@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/11 17:09:27 by wchae             #+#    #+#              #
-#    Updated: 2022/07/04 02:35:46 by wchae            ###   ########.fr        #
+#    Updated: 2022/07/04 20:07:59 by wchae            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,8 @@ READLINE_LIB = $(READLINE_DIR)
 READLINE = $(READLINE_DIR)/libreadline.a
 
 CC			= gcc
-CFLAGS		= -Wall -Werror -Wextra -g3
+CFLAGS		= -Wall -Werror -Wextra -g3 
+# -fsanitize=address
 
 INCS		= -Ilibft -I.
 
@@ -33,6 +34,7 @@ SRCS_NAME		= main.c\
 					builtin_exit.c\
 					builtin_cd.c\
 					builtin_env.c\
+					builtin_export.c\
 					env_utils.c\
 
 SRCS			= $(addprefix $(SRCS_DIR)/, $(SRCS_NAME))

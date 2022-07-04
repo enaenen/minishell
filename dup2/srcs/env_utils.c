@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/04 02:25:03 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 04:03:26 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/04 04:44:00 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,3 +84,14 @@ char **get_env_list(t_env **env_list)
 	get_env_convert(env_list, env);
 	return (env);
 }
+
+// t_env	*find_env_node(t_env *env_list, char *key)
+// {
+// 	while (env_list)
+// 	{
+// 		if (ft_strncmp(env_list->key, key, -1) == 0)
+// 			return (env_list);
+// 		env_list = env_list->next;
+// 	}
+// 	return (NULL);
+// }

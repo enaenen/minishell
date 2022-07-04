@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 04:10:08 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/04 20:04:15 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ int		split_redirection_token(char *input, int i, t_list **token)
 	{
 		tmp = ft_strntrim(input, " ", i);
 		if (!tmp)
-			return (error_msg("MALLOC"));
+			return (error_msg("malloc"));
 		ft_lstadd_back(token, ft_lstnew(tmp));
 		input = &input[i];
 		i = 0;
@@ -107,7 +107,7 @@ int		split_redirection_token(char *input, int i, t_list **token)
 		i++;
 	tmp = ft_strntrim(input, " ", i);
 	if (!tmp)
-		return (error_msg("MALLOC"));
+		return (error_msg("malloc"));
 	ft_lstadd_back(token, ft_lstnew(tmp));
 	return (i + save);
 }
@@ -120,7 +120,7 @@ int	split_space_token(char *input, int i, t_list **token)
 	{
 		tmp = ft_strntrim(input, " ", i);
 		if (!tmp)
-			return (error_msg("MALLOC"));
+			return (error_msg("malloc"));
 		ft_lstadd_back(token, ft_lstnew(tmp));
 	}
 	while (input[i] == ' ')
@@ -266,10 +266,9 @@ int		find_env_var_token(char *data, int start, int end)
 	return (TRUE);
 }
 /** env 해석 
- * read_key env 해석 하여 key 값 가져옴
+ * read_key env 해석 하여 key의 value 값 가져옴
  * strjoin 으로 합치기
  * **/
-
 
 char	*read_key(t_env *env_list, char *key)
 {
@@ -340,7 +339,6 @@ char	*expand_env_var(t_proc *proc, char *data, int start, char **new_data)
 		return (NULL);
 	return (data);
 }
-
 
 char	*expand_int_quot_utils(t_proc *proc, char *data, char **new_data)
 {
@@ -476,7 +474,6 @@ char	*expand_data(t_proc *proc, char *data)
 	new_data = NULL;
 	while (data[++i])
 	{
-
 		// ' " 제거
 		if (data[i] == '\'' && i != find_valid_quot_point(data, i))
 			data = del_small_quot_token(data, i, &new_data);
@@ -493,7 +490,7 @@ char	*expand_data(t_proc *proc, char *data)
 	tmp = new_data;
 	new_data = ft_strjoin(new_data, data);
 	ft_free(tmp);
-	printf("new_data = %s\n",new_data);
+	// printf("new_data = %s\n",new_data);
 
 	return (new_data);
 }
@@ -580,9 +577,11 @@ char	*find_path(char *cmd, char **env_list, int i)
 	char	*path;
 	char	**paths;
 	char	*tmp;
-
 	while (env_list[i] && ft_strnstr(env_list[i], "PATH=", 5) == NULL)
+	{
+		printf("envlist = %s\n",env_list[i]);
 		i++;
+	}
 	if (env_list[i] == NULL)
 		return (cmd);
 	paths = ft_split(env_list[i] + 5, ':');
@@ -633,6 +632,12 @@ int		handle_cmd(t_proc *proc, t_list *cmd, char **envp)
 {
 	int		fd[2];
 	pid_t	pid;
+	printf("proc->cmd\n");
+	ft_lstprint(proc->cmd);
+	printf("proc->data\n");
+	ft_lstprint(proc->data);
+	// printf("proc->cmd\n");
+	// ft_lstprint(proc->cmd);
 
 	if (pipe(fd) == -1)
 		return (error_msg("pipe"));
@@ -775,8 +780,10 @@ void	parse_input(char *input, t_env *env, char **envp)
 	add_history(input);
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
+		// printf("\n==============token===============\n");
 		// ft_lstprint(token);
 		process_heredoc(token);
+		// printf("\n==============token===============\n");
 		parse_pipe_token(token, env, envp);
 		while (0 < waitpid(-1, &g_status, 0))
 			continue ;
@@ -827,7 +834,7 @@ int main(void)
 		parse_input(input, env, envp);
 		input = ft_free(input);
 		reset_stdio(&set);
-		ft_free_split(envp);
+		// ft_free_split(envp);
 		// ft_print_envlist(get_env_list(&env));
 	}
 	// signal(SIGINT, &sig_readline);
