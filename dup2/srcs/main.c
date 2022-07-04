@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/05 01:45:41 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/05 02:09:18 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -720,10 +720,12 @@ int parse_last_process(t_proc *proc, t_env *env)
 	//data expand
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
 	{
+		signal(SIGINT, &sig_exec);
+		signal(SIGQUIT, &sig_exec);
 		// write(1,"proc->data :", ft_strlen("proc->data :"));
 		// ft_lstprint(proc->data);
 		// ft_lstprint(proc->cmd);
-		if (proc->pipe_flag == FALSE && check_builtin_cmd(proc->cmd))
+		if (check_builtin_cmd(proc->cmd))
 		{
 			if (0 < proc->outfile)
 				dup2(proc->outfile, STDOUT_FILENO);
@@ -857,9 +859,7 @@ void	parse_input(char *input, t_env *env)
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
 		process_heredoc(token);
-		// printf("\n==============token===============\n");
-		// ft_lstprint(token);
-		parse_pipe_token(token, env);
+		parse_pipe_token(token, env);x
 		while (0 < waitpid(-1, &g_status, 0))
 			continue ;
 		// ft_lstprint(token);
