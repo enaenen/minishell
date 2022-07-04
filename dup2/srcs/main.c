@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 22:42:02 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/05 01:45:41 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -490,7 +490,6 @@ char	*expand_data(t_proc *proc, char *data)
 	tmp = new_data;
 	new_data = ft_strjoin(new_data, data);
 	ft_free(tmp);
-	// printf("new_data = %s\n",new_data);
 
 	return (new_data);
 }
@@ -514,7 +513,7 @@ int		parse_std_inout_redirection(t_proc *proc, t_list *data, char *tmp)
 	if (ft_strncmp(data->data, ">>", 3) == 0)
 		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	else if (ft_strncmp(data->data, ">", 2) == 0)
-		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (proc->outfile < 0)
 	{
 			error_msg(tmp);
@@ -579,7 +578,7 @@ char	*find_path(char *cmd, char **env_list, int i)
 	char	*tmp;
 	while (env_list[i] && ft_strnstr(env_list[i], "PATH=", 5) == NULL)
 	{
-		printf("envlist = %s\n",env_list[i]);
+		// printf("envlist = %s\n",env_list[i]);
 		i++;
 	}
 	if (env_list[i] == NULL)
@@ -632,9 +631,9 @@ int		handle_cmd(t_proc *proc, t_list *cmd, char **envp)
 {
 	int		fd[2];
 	pid_t	pid;
-	printf("proc->cmd\n");
+	// printf("proc->cmd\n");
 	ft_lstprint(proc->cmd);
-	printf("proc->data\n");
+	// printf("proc->data\n");
 	ft_lstprint(proc->data);
 	// printf("proc->cmd\n");
 	// ft_lstprint(proc->cmd);
@@ -675,13 +674,12 @@ int		parse_process(t_proc *proc, t_env *env, char **envp)
 
 /** pasre process **/
 
-int other_command(t_proc *proc, t_list *cmd, char **envp)
+int other_command(t_proc *proc, t_list *cmd)
 {
 	pid_t	pid;
 	char	**exe;
 	char	**new_envp;
 
-	write(1, *envp, 0);
 	pid = fork();
 	if (pid == 0)
 	{
@@ -712,7 +710,7 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 	return (0);
 }
 
-int parse_last_process(t_proc *proc, t_env *env, char **envp)
+int parse_last_process(t_proc *proc, t_env *env)
 {
 	char	**exe;
 
@@ -735,7 +733,7 @@ int parse_last_process(t_proc *proc, t_env *env, char **envp)
 			execute_builtin_cmd(proc, exe);
 		}
 		else
-			other_command(proc, proc->cmd, envp);
+			other_command(proc, proc->cmd);
 	}
 	ft_lstclear(&proc->limiter, free);
 	ft_lstclear(&proc->cmd, free);
@@ -743,13 +741,81 @@ int parse_last_process(t_proc *proc, t_env *env, char **envp)
 	return (TRUE);
 }
 /** parse process END **/
+char	**token_to_str(t_list *token)
+{
+	char		**strs;
+	t_list		*tmp;
+	int			i;
 
-int		parse_pipe_token(t_list *token, t_env *env, char **envp)
+	i = 0;
+	tmp = token;
+	while (tmp)
+	{
+		tmp = tmp->next;
+		i++;
+	}
+	strs = malloc((i + 1) * sizeof(char *));
+	if (strs == NULL)
+		return (NULL);
+	strs[i] = NULL;
+	i = 0;
+	tmp = token;
+	while (tmp)
+	{
+		strs[i++] = ft_strdup(tmp->data);
+		tmp = tmp->next;
+	}
+	return (strs);
+}
+
+int	cnt_pipe(char **tokens)
+{
+	int	i;
+	int	n_pipe;
+	
+	i = 0;
+	n_pipe = 0;
+	while (tokens[i])
+	{
+		if (ft_strncmp(tokens[i], "|", -1) == 0)
+			n_pipe++;
+		i++;
+	}
+	return (n_pipe);
+}
+
+int		parse_pipe_token(t_list *token, t_env *env)
 {
 	char	*tmp;
 	t_proc	proc;
+	char	**tokens;
+	int		n_pipe;
 
 	ft_memset(&proc, 0, sizeof(t_proc));
+	tokens = token_to_str(token);
+	n_pipe = cnt_pipe(tokens);
+	proc.env_list = env;
+	// parse_data(&proc, proc.data);
+	if (0 < n_pipe)
+	{
+		printf("pipe process\n");
+	}
+	else
+	{
+		while (token)
+		{
+			if (token->data[0] != '|')
+			tmp = ft_strdup(token->data);
+			if (!tmp)
+				return (error_msg("malloc"));
+			ft_lstadd_back(&proc.data, ft_lstnew(tmp));
+			// ft_lstprint(proc.data);
+			if (!token->next)
+				parse_last_process(&proc, env);
+			token = token->next;
+		}
+	}
+	/*
 	while (token)
 	{
 		if (token->data[0] != '|')
@@ -771,6 +837,8 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 			parse_last_process(&proc, env, envp);
 		token = token->next;
 	}
+	*/
+	ft_free_split(tokens);
 	return (TRUE);
 }
 /* END PIPE*/
@@ -778,7 +846,7 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 
 /* CHECK TOKEN END */
 
-void	parse_input(char *input, t_env *env, char **envp)
+void	parse_input(char *input, t_env *env)
 {
 	t_list	*token;
 	int		pipe_cnt;
@@ -788,10 +856,10 @@ void	parse_input(char *input, t_env *env, char **envp)
 	add_history(input);
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
+		process_heredoc(token);
 		// printf("\n==============token===============\n");
 		// ft_lstprint(token);
-		process_heredoc(token);
-		parse_pipe_token(token, env, envp);
+		parse_pipe_token(token, env);
 		while (0 < waitpid(-1, &g_status, 0))
 			continue ;
 		// ft_lstprint(token);
@@ -839,7 +907,7 @@ int main(void)
 			tcsetattr(STDOUT_FILENO, TCSANOW, &set.org_term);
 			exit(g_status);
 		}
-		parse_input(input, env, envp);
+		parse_input(input, env);
 		input = ft_free(input);
 		reset_stdio(&set);
 		// ft_print_envlist(get_env_list(&env));
