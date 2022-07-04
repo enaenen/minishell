@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 20:04:15 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/04 21:49:29 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -674,8 +674,6 @@ int		parse_process(t_proc *proc, t_env *env, char **envp)
 }
 
 /** pasre process **/
-//WIP
-
 
 int other_command(t_proc *proc, t_list *cmd, char **envp)
 {
@@ -698,7 +696,7 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 			proc->status = execve(find_path(exe[0], envp, 0), exe, envp);
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
-		ft_free_split(exe);
+		// ft_free_split(exe);
 	}
 	else if (0 < pid)
 		return (0);
@@ -757,10 +755,11 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 		}
 		if (token->data[0] == '|')
 		{
-			parse_process(&proc, env, envp);
 			ft_memset(&proc, 0, sizeof(t_proc));
-			proc.pipe_flag = TRUE;
+			proc.pipe_flag += TRUE;
+			parse_process(&proc, env, envp);
 		}
+		
 		if (!token->next)
 			parse_last_process(&proc, env, envp);
 		token = token->next;
@@ -775,15 +774,16 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 void	parse_input(char *input, t_env *env, char **envp)
 {
 	t_list	*token;
+	int		pipe_cnt;
 
 	token = 0;
+	pipe_cnt = 0;
 	add_history(input);
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
 		// printf("\n==============token===============\n");
 		// ft_lstprint(token);
 		process_heredoc(token);
-		// printf("\n==============token===============\n");
 		parse_pipe_token(token, env, envp);
 		while (0 < waitpid(-1, &g_status, 0))
 			continue ;
@@ -818,6 +818,8 @@ int main(void)
 	char	**envp;
 
 	init_set(&set, &env);
+	envp = get_env_list(&env);
+
 	while (1)
 	{
 		signal(SIGINT, &sig_readline);
@@ -830,11 +832,9 @@ int main(void)
 			tcsetattr(STDOUT_FILENO, TCSANOW, &set.org_term);
 			exit(g_status);
 		}
-		envp = get_env_list(&env);
 		parse_input(input, env, envp);
 		input = ft_free(input);
 		reset_stdio(&set);
-		// ft_free_split(envp);
 		// ft_print_envlist(get_env_list(&env));
 	}
 	// signal(SIGINT, &sig_readline);

@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/04 18:43:23 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 20:02:15 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/04 21:58:55 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ int	export_key_syntax_check(char *s)
 	int	i;
 
 	i = -1;
-	if (s[0] > 47 && s[0] < 58)
+	if (ft_isalpha(s[0]))
 		return (export_key_syntax_error(s));
 	while (s[++i])
 	{
@@ -81,7 +81,7 @@ void	print_export(t_env *env_list)
 		j = i -> next;
 		while (j)
 		{
-			if (ft_strcmp(i->key, j->key) > 0 && j->print_check == 0)
+			if (0 < ft_strcmp(i->key, j->key) && j->print_check == 0)
 				i = j;
 			j = j->next;
 		}
@@ -103,8 +103,10 @@ void	ft_export(char **buf, t_env *env_list, char **splits, t_env *tmp)
 	while (*buf)
 	{
 		splits = ft_split(*(buf++), '=');
-		if (!splits[1] || !export_key_syntax_check(splits[0]))
+		if (!splits[1] || !export_key_syntax_check(splits[0])){
+			ft_free_split(splits);
 			continue ;
+		}
 		tmp = env_dup_check(env_list, splits[0]);
 		if (tmp)
 		{
