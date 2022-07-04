@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 19:54:46 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/04 22:05:52 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,10 +99,10 @@ int		ft_echo(char **buf);
 void	ft_exit(char **buf);
 void	ft_cd(char **buf, t_env *env_list);
 int		ft_env(t_env *env_list);
-int		ft_cd2(t_proc *proc, char **cmd);
-
-char **get_env_list(t_env **env_list);
+// int		ft_cd2(t_proc *proc, char **cmd);
 void	ft_export(char **dbuf, t_env *env_list, char **splits, t_env *temp);
+
+char 	**get_env_list(t_env **env_list);
 
 
 
