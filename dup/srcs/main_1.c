@@ -6,11 +6,11 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/07 03:04:03 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/06 17:03:49 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 #include <sys/ttydefaults.h>
 /**==============LinkedList============**/
 
@@ -518,7 +518,7 @@ int		parse_std_inout_redirection(t_proc *proc, t_list *data, char *tmp)
 	if (ft_strncmp(data->data, ">>", 3) == 0)
 		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	else if (ft_strncmp(data->data, ">", 2) == 0)
-		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (proc->outfile < 0)
 	{
 			error_msg(tmp);
@@ -803,8 +803,6 @@ void	parse_input(char *input, t_env *env, char **envp)
  */
 void	reset_stdio(t_set *set)
 {
-	// printf("org_stdin = %d\n", set->org_stdin);
-	// printf("org_stdout = %d\n", set->org_stdout);
 	dup2(set->org_stdin, STDIN_FILENO);
 	dup2(set->org_stdout, STDOUT_FILENO);
 }
