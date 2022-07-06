@@ -72,8 +72,7 @@ static int	ft_heredoc(char *limiter)
 	pid_t	pid;
 	
 	// signal(SIGQUIT, SIG_IGN);
-	signal(SIGQUIT, &sig_readline);
-	signal(SIGINT, &sig_here_doc_child);
+	signal(SIGINT, &sig_here_doc);
 	if (pipe(fd) == -1)
 		return (error_msg("pipe"));
 	pid = fork();
