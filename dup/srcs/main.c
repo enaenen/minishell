@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 21:42:53 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/06 15:51:04 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -698,7 +698,7 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 			proc->status = execve(find_path(exe[0], envp, 0), exe, envp);
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
-		ft_free_split(exe);
+		// ft_free_split(exe);
 	}
 	else if (0 < pid)
 		return (0);
@@ -819,7 +819,7 @@ int main(int argc, char **argv, char **envp)
 		input = readline("minishell$ ");
 		/*
 		CTRL + D 처리 = NULL
-		*/
+		*/	
 		signal(SIGQUIT, &sig_readline);
 		if (!input)
 		{

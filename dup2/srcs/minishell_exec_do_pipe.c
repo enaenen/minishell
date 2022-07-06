@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/06 00:36:12 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/06 14:36:23 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/06 15:43:26 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,35 @@ int	is_builtin(char *cmd)
 	return (FALSE);
 }
 
+static int	do_builtin(char **cmd)
+{
+	int	status;
+
+	status = 0;
+	if (ft_strncmp(cmd[0], "echo", -1) == 0)
+		status = b_echo(cmd);
+	else if (ft_strncmp(cmd[0], "exit", -1) == 0)
+	{
+		if (cmd[1] && cmd[2] == 0)
+			b_exit(info, cmd[1]);
+		else if (cmd[1] == 0)
+			b_exit(info, ft_itoa(g_status));
+		print_err_msg(cmd[0], ENARG);
+		status = EXIT_FAILURE;
+	}
+	else if (ft_strncmp(cmd[0], "pwd", -1) == 0)
+		status = b_pwd(info);
+	else if (ft_strncmp(cmd[0], "env", -1) == 0)
+		status = b_env(info, info->env_list);
+	else if (ft_strncmp(cmd[0], "unset", -1) == 0)
+		status = b_unset(&info->env_list, cmd);
+	else if (ft_strncmp(cmd[0], "cd", -1) == 0)
+		status = b_cd(info, cmd);
+	else
+		status = b_export(info, cmd);
+	return (status);
+}
+
 int	do_main_builtin(t_info *info, t_b_node *root)
 {
 	int		io_fd[2];
@@ -92,9 +121,9 @@ static void	do_pipe_child(char *token, t_pipe_args args)
 	// else
 	// {
 	if (is_builtin(token))
-		args.status = do_main_builtin(info, root);
+		// args.status = do_main_builtin(info, root);
 	else
-		args.status = do_cmd_child(info, root);
+		// args.status = do_cmd_child(info, root);
 	// }
 	exit(args.status);
 }
