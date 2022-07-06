@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 19:54:46 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/06 22:17:38 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ typedef struct s_set
 typedef struct s_proc
 {
 	t_env	*env_list;
+	// char	**envs;
 	t_list	*data;
 	t_list	*cmd;
 	t_list	*limiter;

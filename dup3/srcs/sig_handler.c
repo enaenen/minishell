@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/12 15:13:14 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/03 20:07:05 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/07 02:35:19 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ void	sig_here_doc(int sig)
 void	sig_exec(int sig)
 {
 	if (sig == SIGINT)
-		printf("\n");
+		printf("^C\n");
 	else if (sig == SIGQUIT)
 		printf("Quit: 3\n");
 }

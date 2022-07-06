@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:53:43 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 04:44:33 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/06 22:09:59 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,11 +87,6 @@ void	init_set(t_set *set, t_env **env)
 	set->new_term.c_lflag &= ~(ECHOCTL);
 	*env = env_set(environ);
 	env_init(env);
-	//1byte씩 처리
-	// set->new_term.c_cc[VMIN] = 1;
-	//시간설정 사용 X
-	// set->new_term.c_cc[VTIME] = 0;
-	// tcsetattr(STDIN_FILENO, TCSANOW, &set->new_term);
 }
 
 static int	ft_env_lstsize(t_env	*lst)

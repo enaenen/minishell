@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/30 15:21:07 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 03:35:53 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/07 03:01:08 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ void	ft_free_split(char **arr)
 	int	i;
 
 	i = 0;
+	if (!arr || *arr)
+		return ;
 	while (arr[i])
 		free(arr[i++]);
 	free(arr);

@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/04 20:04:15 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/07 02:59:22 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -514,7 +514,7 @@ int		parse_std_inout_redirection(t_proc *proc, t_list *data, char *tmp)
 	if (ft_strncmp(data->data, ">>", 3) == 0)
 		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	else if (ft_strncmp(data->data, ">", 2) == 0)
-		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		proc->outfile = open(tmp, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (proc->outfile < 0)
 	{
 			error_msg(tmp);
@@ -579,7 +579,7 @@ char	*find_path(char *cmd, char **env_list, int i)
 	char	*tmp;
 	while (env_list[i] && ft_strnstr(env_list[i], "PATH=", 5) == NULL)
 	{
-		printf("envlist = %s\n",env_list[i]);
+		// printf("envlist = %s\n",env_list[i]);
 		i++;
 	}
 	if (env_list[i] == NULL)
@@ -632,13 +632,9 @@ int		handle_cmd(t_proc *proc, t_list *cmd, char **envp)
 {
 	int		fd[2];
 	pid_t	pid;
-	// printf("proc->cmd\n");
-	ft_lstprint(proc->cmd);
-	// printf("proc->data\n");
-	ft_lstprint(proc->data);
-	// printf("proc->cmd\n");
-	// ft_lstprint(proc->cmd);
-
+	
+	signal(SIGINT, &sig_exec);
+	signal(SIGQUIT, &sig_exec);
 	if (pipe(fd) == -1)
 		return (error_msg("pipe"));
 	pid = fork();
@@ -660,16 +656,40 @@ int		handle_cmd(t_proc *proc, t_list *cmd, char **envp)
 }
 
 /**COMMAND HANDLING END **/
+// void	ft_envclear(t_env **lst, void (*del)(void *))
+// {
+// 	t_env	*next;
 
+// 	if (!lst || !*lst || !del)
+// 		return ;
+// 	while (*lst)
+// 	{
+// 		next = (*lst)->next;
+// 		del((*lst)->key);
+// 		(*lst)->key = NULL;
+// 		del((*lst)->value);
+// 		(*lst)->value = NULL;
+// 		free(*lst);
+// 		*lst = NULL;
+// 		*lst = next;
+// 	}
+// 	*lst = NULL;
+// }
 
-int		parse_process(t_proc *proc, t_env *env, char **envp)
+int		parse_process(t_proc *proc, t_env *env)
 {
+		
+	char **new_envp;
+
+	new_envp = get_env_list(&proc->env_list);
 	proc->env_list = env;
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
-		handle_cmd(proc, proc->cmd, envp);
+		handle_cmd(proc, proc->cmd, new_envp);
+	ft_free_split(new_envp);
 	ft_lstclear(&proc->limiter, free);
 	ft_lstclear(&proc->cmd, free);
 	ft_lstclear(&proc->data, free);
+
 	return (TRUE);
 }
 
@@ -677,14 +697,20 @@ int		parse_process(t_proc *proc, t_env *env, char **envp)
 //WIP
 
 
-int other_command(t_proc *proc, t_list *cmd, char **envp)
+int other_command(t_proc *proc, t_list *cmd)
 {
 	pid_t	pid;
 	char	**exe;
+	char	**new_envp;
 
+	signal(SIGINT, &sig_exec);
+	signal(SIGQUIT, &sig_exec);
 	pid = fork();
+	if (pid == -1)
+		exit(EXIT_FAILURE);
 	if (pid == 0)
 	{
+		new_envp = get_env_list(&proc->env_list);
 		if (0 < proc->outfile)
 			dup2(proc->outfile, STDOUT_FILENO);
 		exe = split_cmd(cmd);
@@ -696,12 +722,12 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 			exit(g_status);
 		}
 		else if (exe[0][0] == '/' || exe[0][0] == '.')
-			proc->status = execve(exe[0], exe, envp);
+			proc->status = execve(exe[0], exe, new_envp);
 		else
-			proc->status = execve(find_path(exe[0], envp, 0), exe, envp);
+			proc->status = execve(find_path(exe[0], new_envp, 0), exe, new_envp);
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
-		ft_free_split(exe);
+		ft_free_split(new_envp);
 	}
 	else if (0 < pid)
 		return (0);
@@ -710,7 +736,8 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 	return (0);
 }
 
-int parse_last_process(t_proc *proc, t_env *env, char **envp)
+
+int parse_last_process(t_proc *proc, t_env *env)
 {
 	char	**exe;
 
@@ -719,6 +746,8 @@ int parse_last_process(t_proc *proc, t_env *env, char **envp)
 	//data expand
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
 	{
+		// signal(SIGINT, &sig_exec);
+		// signal(SIGQUIT, &sig_exec);
 		if (proc->pipe_flag == FALSE && check_builtin_cmd(proc->cmd))
 		{
 			if (0 < proc->outfile)
@@ -729,7 +758,7 @@ int parse_last_process(t_proc *proc, t_env *env, char **envp)
 			execute_builtin_cmd(proc, exe);
 		}
 		else
-			other_command(proc, proc->cmd, envp);
+			other_command(proc, proc->cmd);
 	}
 	ft_lstclear(&proc->limiter, free);
 	ft_lstclear(&proc->cmd, free);
@@ -738,12 +767,13 @@ int parse_last_process(t_proc *proc, t_env *env, char **envp)
 }
 /** parse process END **/
 
-int		parse_pipe_token(t_list *token, t_env *env, char **envp)
+int		parse_pipe_token(t_list *token, t_env *env)
 {
 	char	*tmp;
 	t_proc	proc;
 
 	ft_memset(&proc, 0, sizeof(t_proc));
+	proc.env_list = env;
 	while (token)
 	{
 		if (token->data[0] != '|')
@@ -755,12 +785,12 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 		}
 		if (token->data[0] == '|')
 		{
-			parse_process(&proc, env, envp);
+			parse_process(&proc, env);
 			ft_memset(&proc, 0, sizeof(t_proc));
 			proc.pipe_flag = TRUE;
 		}
 		if (!token->next)
-			parse_last_process(&proc, env, envp);
+			parse_last_process(&proc, env);
 		token = token->next;
 	}
 	return (TRUE);
@@ -770,7 +800,7 @@ int		parse_pipe_token(t_list *token, t_env *env, char **envp)
 
 /* CHECK TOKEN END */
 
-void	parse_input(char *input, t_env *env, char **envp)
+void	parse_input(char *input, t_env *env)
 {
 	t_list	*token;
 
@@ -779,7 +809,7 @@ void	parse_input(char *input, t_env *env, char **envp)
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
 		process_heredoc(token);
-		parse_pipe_token(token, env, envp);
+		parse_pipe_token(token, env);
 		while (0 < waitpid(-1, &g_status, 0))
 			continue ;
 	}
@@ -810,9 +840,10 @@ int main(void)
 	t_set	set;
 	t_env	*env;
 	char	*input;
-	char	**envp;
+	// char	**envp;
 
 	init_set(&set, &env);
+	// envp = get_env_list(&env);
 	while (1)
 	{
 		signal(SIGINT, &sig_readline);
@@ -822,14 +853,13 @@ int main(void)
 		if (input == NULL)
 		{
 			write(1,"\e[Aminishell$ exit\n", 20);
-			tcsetattr(STDOUT_FILENO, TCSANOW, &set.org_term);
+			// tcsetattr(STDOUT_FILENO, TCSANOW, &set.org_term);
 			exit(g_status);
 		}
-		envp = get_env_list(&env);
-		parse_input(input, env, envp);
+		tcsetattr(STDOUT_FILENO, TCSANOW, &set.org_term);
+		parse_input(input, env);
 		input = ft_free(input);
 		reset_stdio(&set);
-		ft_free_split(envp);
 		// ft_print_envlist(get_env_list(&env));
 	}
 	return (0);

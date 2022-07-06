@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/28 00:14:31 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/28 20:04:36 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/06 21:08:05 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,10 @@
 
 void	ft_pwd(void)
 {
-	printf("%s\n", 	getcwd(NULL, 0));
+	char *buf;
+
+	buf = getcwd(NULL, 0);
+	printf("%s\n", 	buf);
+	free (buf);
 	g_status = 0;
 }
