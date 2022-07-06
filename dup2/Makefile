@@ -6,7 +6,7 @@
 #    By: wchae <wchae@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/06/11 17:09:27 by wchae             #+#    #+#              #
-#    Updated: 2022/07/04 20:33:27 by wchae            ###   ########.fr        #
+#    Updated: 2022/07/06 00:52:47 by wchae            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,6 +36,7 @@ SRCS_NAME		= main.c\
 					builtin_env.c\
 					builtin_export.c\
 					env_utils.c\
+					error_handle.c\
 
 SRCS			= $(addprefix $(SRCS_DIR)/, $(SRCS_NAME))
 

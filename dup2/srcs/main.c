@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/05 02:09:18 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/06 00:53:45 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,34 +35,7 @@ void	ft_lstprint(t_list *lst)
 // }
 
 /* UTIL */
-int	error_msg(char *msg)
-{
-	g_status = 2;
-	write(2, "bash: ", 6);
-	if (!msg)
-		write(2, "syntax error near unexpected token 'newline'", 44);
-	else if (msg[0] == '|' || msg[0] == '<' || msg[0] == '>')
-	{
-		write(2, "syntax error near unexpected token '", 36);
-		write(2, msg, ft_strlen(msg));
-		write(2, "'\n", 2);
-		return (ERROR);
-	}
-	else
-	{
-		g_status = 127;
-		write(2, msg, ft_strlen(msg));
-		if (ft_strncmp(strerror(errno), "Bad address", 12) == 0)
-			write(2, ": command not found", 19);
-		else
-		{
-			write(2, ": ", 2);
-			write(2, strerror(errno), ft_strlen(strerror(errno)));
-		}
-	}
-	write(2, "\n", 1);
-	return (g_status);
-}
+
 /* UTIL END*/
 
 /* SPLIT TOKEN */
@@ -673,16 +646,79 @@ int		parse_process(t_proc *proc, t_env *env, char **envp)
 }
 
 /** pasre process **/
+/*
+static int	make_path_and_exec_cmd(t_proc *info, char **path)
+{
+	t_buffer	*buf;
+	char		**env;
+	int			i;
+
+	if (!path)
+		return (0);
+	env = get_env_strs(info);
+	buf = create_buf();
+	i = 0;
+	while (path[i])
+	{
+		add_str(buf, path[i]);
+		add_char(buf, '/');
+		add_str(buf, proc->cmd[0]);
+		free(path[i]);
+		path[i] = put_str(buf);
+		execve(path[i], info->cmd, env);
+		if (errno != ENOENT)
+			break ;
+		i++;
+	}
+	del_buf(buf);
+	free_strs(env);
+	return (i);
+}
+
+
+static int	do_cmd_env_path(t_proc *proc, t_env *path_node)
+{
+	char		**path;
+	int			i;
+
+	path = ft_split(path_node->value, ':');
+	i = make_path_and_exec_cmd(proc, path);
+	if (errno == ENOENT)
+		print_err_msg(info->cmd[0], "ECMDNF");
+	else if (path)
+	{
+		if (ft_strncmp(info->cmd[0], "..", -1) == 0)
+			print_err_msg(info->cmd[0], EDIR);
+		else
+			print_err_msg(path[i], strerror(errno));
+	}
+	else
+		print_err_msg(info->cmd[0], strerror(ENOENT));
+	free_strs(info->cmd);
+	free_strs(path);
+	return (ERROR_EXIT);
+}
+*/
 
 int other_command(t_proc *proc, t_list *cmd)
 {
 	pid_t	pid;
+	// t_env	*path_node;
+
 	char	**exe;
 	char	**new_envp;
 
 	pid = fork();
+	if (pid == -1)
+		exit(EXIT_FAILURE);
 	if (pid == 0)
 	{
+
+		// path_node = find_env_node(proc->env_list, "PATH");
+		// if (path_node)
+		// 	return (do_cmd_env_path(proc, path_node));
+
+
 		new_envp = get_env_list(&proc->env_list);
 		if (0 < proc->outfile)
 			dup2(proc->outfile, STDOUT_FILENO);
@@ -701,8 +737,8 @@ int other_command(t_proc *proc, t_list *cmd)
 		}
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
-		// ft_free_split(exe);
 	}
+
 	else if (0 < pid)
 		return (0);
 	else
@@ -859,7 +895,7 @@ void	parse_input(char *input, t_env *env)
 	if (split_token(input, &token) == TRUE && check_token(token) == TRUE)
 	{
 		process_heredoc(token);
-		parse_pipe_token(token, env);x
+		parse_pipe_token(token, env);
 		while (0 < waitpid(-1, &g_status, 0))
 			continue ;
 		// ft_lstprint(token);
