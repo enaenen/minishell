@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/28 18:43:07 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/28 19:56:16 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/06 17:05:38 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,8 +60,8 @@ int		exit_num_arg_cal(char *arg)
 
 void	ft_exit(char **buf)
 {
-	if (!buf[0])
-		exit(0);
+	if (!buf || !buf[0])
+		exit(g_status);
 	if (!valid_exit_arg(buf[0]))
 		exit_extra_cases(1, buf[0]);
 	else if (!buf[1])

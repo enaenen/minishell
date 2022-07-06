@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/06/30 21:42:53 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/06 17:03:49 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ int	error_msg(char *msg)
 		}
 	}
 	write(2, "\n", 1);
+	// printf("error\n");
 	return (g_status);
 }
 /* UTIL END*/
@@ -493,7 +494,7 @@ char	*expand_data(t_proc *proc, char *data)
 	tmp = new_data;
 	new_data = ft_strjoin(new_data, data);
 	ft_free(tmp);
-	printf("new_data = %s\n",new_data);
+	// printf("new_data = %s\n",new_data);
 
 	return (new_data);
 }
@@ -618,7 +619,9 @@ int		execute_cmd(t_proc *proc, t_list *cmd, int *fd, char **envp)
 	if (!exe)
 		return (error_msg("malloc"));
 	if (check_builtin_cmd(proc->cmd) == TRUE)
+	{
 		execute_builtin_cmd(proc, exe);
+	}
 	else if (exe[0][0] == '/' || exe[0][0] == '.')
 	{
 		if (execve(exe[0], exe, 0) == -1)
@@ -691,14 +694,17 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 		if (!exe)
 			return (error_msg("malloc"));
 		if (check_builtin_cmd(proc->cmd) == TRUE)
+		{
 			execute_builtin_cmd(proc, exe);
+			exit(g_status);
+		}
 		else if (exe[0][0] == '/' || exe[0][0] == '.')
 			proc->status = execve(exe[0], exe, envp);
 		else
 			proc->status = execve(find_path(exe[0], envp, 0), exe, envp);
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
-		ft_free_split(exe);
+		// ft_free_split(exe);
 	}
 	else if (0 < pid)
 		return (0);
@@ -817,7 +823,7 @@ int main(int argc, char **argv, char **envp)
 		input = readline("minishell$ ");
 		/*
 		CTRL + D 처리 = NULL
-		*/
+		*/	
 		signal(SIGQUIT, &sig_readline);
 		if (!input)
 		{
@@ -832,6 +838,5 @@ int main(int argc, char **argv, char **envp)
 		reset_stdio(&set);
 		ft_free_split(envp);
 	}
-	
 	return (0);
 }
