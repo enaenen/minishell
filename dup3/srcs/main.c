@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/07 02:59:22 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/07 03:50:57 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -625,6 +625,7 @@ int		execute_cmd(t_proc *proc, t_list *cmd, int *fd, char **envp)
 	}
 	else if (execve(find_path(exe[0], envp, 0), exe, envp) == -1)
 		return (error_msg(exe[0]));
+	// ft_free_split(exe);
 	return (0);
 }
 
@@ -656,39 +657,34 @@ int		handle_cmd(t_proc *proc, t_list *cmd, char **envp)
 }
 
 /**COMMAND HANDLING END **/
-// void	ft_envclear(t_env **lst, void (*del)(void *))
-// {
-// 	t_env	*next;
-
-// 	if (!lst || !*lst || !del)
-// 		return ;
-// 	while (*lst)
-// 	{
-// 		next = (*lst)->next;
-// 		del((*lst)->key);
-// 		(*lst)->key = NULL;
-// 		del((*lst)->value);
-// 		(*lst)->value = NULL;
-// 		free(*lst);
-// 		*lst = NULL;
-// 		*lst = next;
-// 	}
-// 	*lst = NULL;
-// }
-
-int		parse_process(t_proc *proc, t_env *env)
+void	ft_envclear(t_env **lst, void (*del)(void *))
 {
-		
-	char **new_envp;
+	t_env	*next;
 
-	new_envp = get_env_list(&proc->env_list);
-	proc->env_list = env;
+	if (!lst || !*lst || !del)
+		return ;
+	while (*lst)
+	{
+		next = (*lst)->next;
+		del((*lst)->key);
+		(*lst)->key = NULL;
+		del((*lst)->value);
+		(*lst)->value = NULL;
+		free(*lst);
+		*lst = NULL;
+		*lst = next;
+	}
+	*lst = NULL;
+}
+
+int		parse_process(t_proc *proc, char **envp)
+{
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
-		handle_cmd(proc, proc->cmd, new_envp);
-	ft_free_split(new_envp);
+		handle_cmd(proc, proc->cmd, envp);
 	ft_lstclear(&proc->limiter, free);
 	ft_lstclear(&proc->cmd, free);
 	ft_lstclear(&proc->data, free);
+	// ft_envclear(&proc->env_list, free);
 
 	return (TRUE);
 }
@@ -697,11 +693,10 @@ int		parse_process(t_proc *proc, t_env *env)
 //WIP
 
 
-int other_command(t_proc *proc, t_list *cmd)
+int other_command(t_proc *proc, t_list *cmd, char **envp)
 {
 	pid_t	pid;
 	char	**exe;
-	char	**new_envp;
 
 	signal(SIGINT, &sig_exec);
 	signal(SIGQUIT, &sig_exec);
@@ -710,7 +705,6 @@ int other_command(t_proc *proc, t_list *cmd)
 		exit(EXIT_FAILURE);
 	if (pid == 0)
 	{
-		new_envp = get_env_list(&proc->env_list);
 		if (0 < proc->outfile)
 			dup2(proc->outfile, STDOUT_FILENO);
 		exe = split_cmd(cmd);
@@ -722,12 +716,12 @@ int other_command(t_proc *proc, t_list *cmd)
 			exit(g_status);
 		}
 		else if (exe[0][0] == '/' || exe[0][0] == '.')
-			proc->status = execve(exe[0], exe, new_envp);
+			proc->status = execve(exe[0], exe, envp);
 		else
-			proc->status = execve(find_path(exe[0], new_envp, 0), exe, new_envp);
+			proc->status = execve(find_path(exe[0], envp, 0), exe, envp);
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
-		ft_free_split(new_envp);
+		// ft_free_split(exe);
 	}
 	else if (0 < pid)
 		return (0);
@@ -740,9 +734,11 @@ int other_command(t_proc *proc, t_list *cmd)
 int parse_last_process(t_proc *proc, t_env *env)
 {
 	char	**exe;
+	char	**envp;
 
 	proc->env_list = env;
 	exe = NULL;
+	envp = get_env_list(&env);
 	//data expand
 	if (parse_data(proc, proc->data) == TRUE && proc->cmd)
 	{
@@ -758,8 +754,11 @@ int parse_last_process(t_proc *proc, t_env *env)
 			execute_builtin_cmd(proc, exe);
 		}
 		else
-			other_command(proc, proc->cmd);
+		{
+			other_command(proc, proc->cmd, envp);
+		}
 	}
+	ft_free_split(envp);
 	ft_lstclear(&proc->limiter, free);
 	ft_lstclear(&proc->cmd, free);
 	ft_lstclear(&proc->data, free);
@@ -771,7 +770,9 @@ int		parse_pipe_token(t_list *token, t_env *env)
 {
 	char	*tmp;
 	t_proc	proc;
+	char	**envp;
 
+	envp = get_env_list(&env);
 	ft_memset(&proc, 0, sizeof(t_proc));
 	proc.env_list = env;
 	while (token)
@@ -785,7 +786,7 @@ int		parse_pipe_token(t_list *token, t_env *env)
 		}
 		if (token->data[0] == '|')
 		{
-			parse_process(&proc, env);
+			parse_process(&proc, envp);
 			ft_memset(&proc, 0, sizeof(t_proc));
 			proc.pipe_flag = TRUE;
 		}
@@ -793,6 +794,9 @@ int		parse_pipe_token(t_list *token, t_env *env)
 			parse_last_process(&proc, env);
 		token = token->next;
 	}
+	ft_free_split(envp);
+	free(envp);
+	// ft_envclear(&proc.env_list, free);
 	return (TRUE);
 }
 /* END PIPE*/
@@ -840,10 +844,8 @@ int main(void)
 	t_set	set;
 	t_env	*env;
 	char	*input;
-	// char	**envp;
 
 	init_set(&set, &env);
-	// envp = get_env_list(&env);
 	while (1)
 	{
 		signal(SIGINT, &sig_readline);

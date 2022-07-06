@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:19:21 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/03 20:27:17 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/07 03:49:07 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,11 +76,8 @@ static void	heredoc_child(char *limiter, int *fd)
 	signal(SIGINT, SIG_DFL);
 	close(fd[0]);
 	write(1, "> ", 2);
-	while (1)
-	{
-		while (get_next_line(&line))
-			print_line(line, limiter, fd[1]);
-	}
+	while (get_next_line(&line))
+		print_line(line, limiter, fd[1]);
 	exit(EXIT_FAILURE);
 }
 
@@ -107,11 +104,15 @@ static int	ft_heredoc(char *limiter)
 
 void	process_heredoc(t_list *token)
 {
+	int org_stdin;
+
 	signal(SIGINT, &sig_here_doc);
+	org_stdin = dup(STDIN_FILENO);
 	while (token)
 	{
 		if (ft_strncmp(token->data, "<<", 3) == 0)
 		{
+			dup2(org_stdin, STDIN_FILENO);
 			ft_heredoc(token->next->data);
 			token = token->next;
 		}

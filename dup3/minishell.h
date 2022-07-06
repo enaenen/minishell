@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 17:08:37 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/06 22:17:38 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/07 03:21:48 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ typedef struct s_set
 typedef struct s_proc
 {
 	t_env	*env_list;
-	// char	**envs;
 	t_list	*data;
 	t_list	*cmd;
 	t_list	*limiter;
@@ -66,7 +65,6 @@ typedef struct s_proc
 	int		outfile;
 	int		pipe_flag;
 	int		status;
-	// char	*cur_path;
 }	t_proc;
 
 int		error_msg(char *msg);
