@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../minishell.h"
 #include <sys/ttydefaults.h>
 /**==============LinkedList============**/
 
@@ -797,8 +797,6 @@ void	parse_input(char *input, t_env *env, char **envp)
  */
 void	reset_stdio(t_set *set)
 {
-	// printf("org_stdin = %d\n", set->org_stdin);
-	// printf("org_stdout = %d\n", set->org_stdout);
 	dup2(set->org_stdin, STDIN_FILENO);
 	dup2(set->org_stdout, STDOUT_FILENO);
 }
