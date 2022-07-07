@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/07 03:50:57 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/07 14:46:50 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,7 +161,7 @@ int		split_rest_token(char *input, t_list **token)
 	{
 		tmp = ft_strntrim(input, " ", ft_strlen(input));
 		if (!tmp)
-			return (error_msg("MALLOC"));
+			return (error_msg("malloc"));
 		ft_lstadd_back(token, ft_lstnew(tmp));
 	}
 	return (TRUE);
@@ -780,6 +780,7 @@ int		parse_pipe_token(t_list *token, t_env *env)
 		if (token->data[0] != '|')
 		{
 			tmp = ft_strdup(token->data);
+		
 			if (!tmp)
 				return (error_msg("malloc"));
 			ft_lstadd_back(&proc.data, ft_lstnew(tmp));
