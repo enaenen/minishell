@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/07 15:27:17 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/07 15:33:19 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -724,6 +724,7 @@ int other_command(t_proc *proc, t_list *cmd, char **envp)
 		if (proc->status == -1)
 			exit(error_msg(exe[0]));
 		// ft_free_split(exe);
+		ft_free_split(envp);
 	}
 	else if (0 < pid)
 		return (0);
