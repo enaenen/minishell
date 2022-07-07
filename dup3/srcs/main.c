@@ -6,7 +6,7 @@
 /*   By: wchae <wchae@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/11 16:28:59 by wchae             #+#    #+#             */
-/*   Updated: 2022/07/07 14:46:50 by wchae            ###   ########.fr       */
+/*   Updated: 2022/07/07 15:27:17 by wchae            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -636,6 +636,7 @@ int		handle_cmd(t_proc *proc, t_list *cmd, char **envp)
 	
 	signal(SIGINT, &sig_exec);
 	signal(SIGQUIT, &sig_exec);
+	
 	if (pipe(fd) == -1)
 		return (error_msg("pipe"));
 	pid = fork();
@@ -646,6 +647,7 @@ int		handle_cmd(t_proc *proc, t_list *cmd, char **envp)
 		close(fd[1]);
 		dup2(fd[0], STDIN_FILENO);
 		close(fd[0]);
+		close(STDIN_FILENO);
 	}
 	else
 	{
